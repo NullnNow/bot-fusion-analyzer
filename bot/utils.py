@@ -9,8 +9,9 @@ from discord.member import Member
 
 from bot.enums import IdType
 
-MAX_DEX_ID = 570
+MAX_DEX_ID = 573
 AUTOGEN_MAX_ID = 501
+NECROZMA_DEX_ID = 450
 
 
 LETTER_AND_PNG_PATTERN = r'[a-z]{0,1}\.png$'
@@ -64,8 +65,8 @@ def is_missing_autogen(fusion_id: str):
     split_fusion_id = fusion_id.split(".")
     head_id = int(split_fusion_id[0])
     body_id = int(split_fusion_id[1])
-    # Special case: Necrozma bodies (450) are just Ultra Necrozma again
-    if body_id == 450:
+    # Special case: Necrozma bodies are just Ultra Necrozma again
+    if body_id == NECROZMA_DEX_ID:
         return True
     return head_id > AUTOGEN_MAX_ID or body_id > AUTOGEN_MAX_ID
 

@@ -3405,39 +3405,33 @@
     },
     {
         "id":"568",
-        "name": "unknown",
+        "name": "tynamo",
         "typos": [],
-        "display_name":"Unknown"
+        "display_name":"Tynamo"
     },
     {
         "id":"569",
-        "name": "unknown",
+        "name": "eelektrik",
         "typos": [],
-        "display_name":"Unknown"
+        "display_name":"Eelektrik"
     },
     {
         "id":"570",
-        "name": "unknown",
+        "name": "eelektross",
         "typos": [],
-        "display_name":"Unknown"
+        "display_name":"Eelektross"
     },
     {
         "id":"571",
-        "name": "unknown",
+        "name": "skrelp",
         "typos": [],
-        "display_name":"Unknown"
+        "display_name":"Skrelp"
     },
     {
         "id":"572",
-        "name": "unknown",
+        "name": "dragalge",
         "typos": [],
-        "display_name":"Unknown"
-    },
-    {
-        "id":"573",
-        "name": "unknown",
-        "typos": [],
-        "display_name":"Unknown"
+        "display_name":"Dragalge"
     }
 
     ]

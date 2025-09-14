@@ -9,7 +9,7 @@ from discord.member import Member
 
 from bot.enums import IdType
 
-MAX_DEX_ID = 573
+MAX_DEX_ID = 572
 AUTOGEN_MAX_ID = 501
 NECROZMA_DEX_ID = 450
 

@@ -5,9 +5,7 @@ from discord.message import Message, Attachment
 from discord import User, TextChannel, Thread, DMChannel
 
 from bot.opt_out_options import HideAutoAnalysis
-from enums import AnalysisType, Severity
-
-MAX_SEVERITY = [Severity.refused, Severity.controversial]
+from enums import AnalysisType
 
 
 def generate_analysis(
@@ -27,7 +25,7 @@ def generate_analysis(
 async def send_full_analysis(analysis: Analysis,
                              channel: TextChannel|Thread|DMChannel,
                              author: User):
-    if (analysis.severity in MAX_SEVERITY) and analysis.type.is_gallery():
+    if analysis.severity.is_warn_severity() and analysis.type.is_gallery():
         await send_analysis(analysis, channel, author)
     else:
         await send_analysis(analysis, channel)

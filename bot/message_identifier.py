@@ -30,10 +30,6 @@ def is_assets_gallery(message: Message):
     return message.channel.id == id_channel_assets_pif
 
 
-def is_test_gallery(message: Message):
-    return message.channel.id == id_channel_gallery_doodledoo
-
-
 def is_mentioning_reply(message: Message):
     return is_mentioning_bot(message) and is_reply(message)
 

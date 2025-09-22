@@ -4,6 +4,7 @@ import discord
 from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, TextChannel
 from analysis import Analysis
 from analyzer import send_full_analysis, generate_analysis, send_analysis
+from bot.analyzer import send_extra_embeds
 from bot.opt_out_options import is_opted_out_user
 from bot.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
 from bot.utils import fancy_print
@@ -18,7 +19,6 @@ ERROR_EMOJI_NAME = "NANI"
 ERROR_EMOJI_ID = f"<:{ERROR_EMOJI_NAME}:770390673664114689>"
 SPRITE_MANAGER_PING = "<@&900867033175040101>"
 ERROR_EMOJI = PartialEmoji(name=ERROR_EMOJI_NAME).from_str(ERROR_EMOJI_ID)
-MAX_SEVERITY = [Severity.refused, Severity.controversial]
 
 
 # Handler methods
@@ -49,7 +49,7 @@ async def handle_gallery(message: Message, is_assets: bool = False):
             await handle_misnumbered_in_gallery(message, analysis)
             return
 
-        if analysis.severity in MAX_SEVERITY:
+        if analysis.severity.is_warn_severity():
             try:
                 await message.add_reaction(ERROR_EMOJI)
             except HTTPException:
@@ -71,11 +71,12 @@ async def handle_zigzag_galpost(message: Message):
         analysis_type = AnalysisType.zigzag_fusion
 
     analysis = generate_analysis(message, specific_attachment=None, analysis_type=analysis_type)
-    if analysis.severity == Severity.refused:       # Controversial won't ping
-        zigzagoon_message = "This Zigzag galpost seems to have issues. If this is incorrect, contact Doodledoo."
-        await ctx().pif.zigzagoon.send(embed=analysis.embed, content=zigzagoon_message)
+    if analysis.severity == Severity.refused:       # Only for refused tier
+        channel = ctx().pif.zigzagoon
     else:
-        await send_analysis(analysis, ctx().pif.logs)
+        channel = ctx().pif.logs
+    await send_analysis(analysis, channel)
+    await send_extra_embeds(analysis, channel)
 
 
 async def handle_reply_message(message: Message, auto_spritework: bool = False):

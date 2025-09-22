@@ -36,6 +36,9 @@ class Severity(Enum):
     controversial   = "Controversial"
     refused         = "Invalid"
 
+    def is_warn_severity(self):
+        return self != Severity.accepted
+
 
 class DiscordColour(Enum):
     green   = discord.Colour(0x2ecc71)

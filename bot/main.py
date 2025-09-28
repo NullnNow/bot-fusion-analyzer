@@ -10,10 +10,10 @@ from discord.user import User
 
 from bot.setup import set_bot_up, ctx
 from bot.handler import (handle_zigzag_galpost, handle_sprite_gallery, handle_assets_gallery,
-                         handle_spriter_application, handle_reply, handle_spritework_post)
+                         handle_spriter_application, handle_reply, handle_spritework_post, handle_direct_ping)
 from bot.message_identifier import (is_zigzag_galpost, is_sprite_gallery, is_assets_custom_base,
                                     is_mentioning_reply, is_spriter_application, is_message_from_ignored_bots,
-                                    is_spritework_post)
+                                    is_spritework_post, is_mentioning_bot)
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,6 +58,8 @@ async def on_message(message: Message):
             await handle_assets_gallery(message)
         elif is_mentioning_reply(message):
             await handle_reply(message)
+        elif is_mentioning_bot(message):
+            await handle_direct_ping(message)
 
     except Exception as message_exception:
         print(" ")

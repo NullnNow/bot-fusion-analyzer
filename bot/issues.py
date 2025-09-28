@@ -45,7 +45,7 @@ class DifferentSprite(Issue):
 
 
 class MissingFilename(Issue):
-    description = Description.missing_file_name
+    description = Description.missing_filename
     severity = Severity.refused
 
 

@@ -92,13 +92,8 @@ class TripleFusionSprite(Issue):
     severity = Severity.accepted
 
 
-class IconSprite(Issue):
-    description = Description.icon
-    severity = Severity.ignored
-
-
-class IncomprehensibleSprite(Issue):
-    description = Description.incomprehensible
+class UnknownSprite(Issue):
+    description = Description.unknown_sprite
     severity = Severity.ignored
 
 

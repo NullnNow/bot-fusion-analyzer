@@ -5,8 +5,8 @@ import discord
 
 class Description(str, Enum):
     missing_file        = "Missing sprite"
-    missing_file_name   = "Missing file name"
-    different_fusion_id = "Different ID"
+    missing_filename    = "Missing filename"
+    different_fusion_id = "Different IDs"
     colour_excess       = "Color excess"
     semi_transparent    = "Semi transparent pixels"
     intentional_transp  = "Intentional transparency"
@@ -16,11 +16,10 @@ class Description(str, Enum):
     invalid_fusion_id   = "Invalid fusion ID"
     not_png             = "Invalid image format"
     invalid_size        = "Invalid size"
-    icon                = "Icon sprite"
     custom              = "custom base"
     egg                 = "egg sprite"
     triple              = "Triple fusion"
-    incomprehensible    = "Incomprehensible name"
+    unknown_sprite      = "Unknown filename"
     no_transparency     = "Missing transparency"
     aseprite_user       = "Aseprite"
     graphics_gale_user  = "GraphicsGale"

@@ -143,10 +143,8 @@ def extract_fusion_ids_from_content(message: Message, id_type: IdType):
         search_pattern = TEXT_PATTERN_CUSTOM_ID
     elif id_type.is_triple_fusion():
         search_pattern = TEXT_PATTERN_TRIPLE_ID
-    elif id_type.is_fusion():
+    else:   # Search for fusion content IDs if the filename is unknown too
         search_pattern = TEXT_PATTERN_FUSION_ID
-    else:
-        return id_list
 
     iterator = re.finditer(search_pattern, content)
     for result in iterator:

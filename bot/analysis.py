@@ -121,10 +121,10 @@ class Analysis:
 
     # Non-embed methods
 
-    def have_attachment(self) -> bool:
+    def has_attachment(self) -> bool:
         return len(self.message.attachments) >= 1
 
-    def have_zigzag_embed(self) -> bool:
+    def has_zigzag_embed(self) -> bool:
         if not self.type.is_zigzag_galpost():
             return False
         embeds = self.message.embeds
@@ -160,7 +160,7 @@ class Analysis:
     def extract_fusion_id_from_filename(self) -> (str, IdType):
         fusion_id = None
         id_type = IdType.unknown
-        if self.have_attachment() or self.type.is_zigzag_galpost():
+        if self.has_attachment() or self.type.is_zigzag_galpost():
             filename = self.get_filename()
             fusion_id, id_type = utils.get_fusion_id_from_filename(filename)
             if utils.is_chat_gpt_in_filename(filename):

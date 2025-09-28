@@ -9,6 +9,10 @@ Discord bot, provides feedback on custom sprites for the game [Pokémon Infinite
 - **Greystorm** for giving permission to use various utilities from spritebot
 
 # Changelog
+## Version 2.5
+- Fix: archived threads weren't being fetched properly in spriter applications
+- Fix: ignore attachments that aren't images
+
 ## Version 2.4
 - **Intentional transparency**: by adding this keyword to gallery posts, Fusion Bot won't reject a sprite that has semi transparent pixels
 - Support for the new egg sprite filename format (it's now 123_egg.png)

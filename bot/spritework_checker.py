@@ -60,21 +60,28 @@ async def find_threads_with_pattern(pattern: str, content: str) -> list[Thread]:
 
 
 async def grab_thread_from_url(url_string: str) -> Thread|None:
-    url_parts = url_string.split("/")
-    if len(url_parts) < 4:
+    thread_id = await get_thread_id(url_string)
+    if thread_id is None:
         return None
-    client = get_bot_client()
-    thread_id = int(url_parts[3])
     try:
-        thread_id = int(url_parts[3])
-        yee = client.get_channel(thread_id)
-        return yee
-    except ValueError:
-        print(f"Value Error trying to cast {thread_id} into an int")
-        return None
+        return await get_or_fetch_channel(thread_id)
     except (HTTPException, NotFound, Forbidden) as exception:
         error_message = f"Exception {exception} retrieving linked thread {thread_id}"
         print(error_message)
         await ctx().doodledoo.debug.send(error_message)
         return None
 
+async def get_thread_id(url_string: str) -> int|None:
+    url_parts = url_string.split("/")
+    if len(url_parts) < 4:
+        return None
+    return int(url_parts[3])
+
+async def get_or_fetch_channel(thread_id: int) -> Thread|None:
+    client = get_bot_client()
+    if client is None:
+        return None
+    channel = client.get_channel(thread_id)
+    if channel is not None:
+        return channel
+    return await client.fetch_channel(thread_id)    # API call, used only as safeguard

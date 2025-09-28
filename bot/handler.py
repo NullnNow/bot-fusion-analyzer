@@ -1,7 +1,7 @@
 import asyncio
 
 import discord
-from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, TextChannel
+from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, TextChannel, Attachment
 from analysis import Analysis
 from analyzer import send_full_analysis, generate_analysis, send_analysis
 from bot.analyzer import send_extra_embeds
@@ -38,6 +38,8 @@ async def handle_gallery(message: Message, is_assets: bool = False):
         log_event("Gallery >", message)
 
     for specific_attachment in message.attachments:
+        if await attachment_not_an_image(specific_attachment):
+            continue
         if is_assets:
             analysis_type = AnalysisType.assets_gallery
         else:
@@ -79,13 +81,15 @@ async def handle_zigzag_galpost(message: Message):
     await send_extra_embeds(analysis, channel)
 
 
-async def handle_reply_message(message: Message, auto_spritework: bool = False):
+async def handle_regular_analysis(message: Message, auto_spritework: bool = False):
     channel = message.channel
     if auto_spritework:
         analysis_type = AnalysisType.auto_spritework
     else:
         analysis_type = AnalysisType.ping_reply
     for specific_attachment in message.attachments:
+        if await attachment_not_an_image(specific_attachment):
+            continue
         analysis = generate_analysis(message, specific_attachment, analysis_type)
         try:
             await notify_if_ai(analysis, message, analysis_type, channel)
@@ -100,7 +104,7 @@ async def handle_spriter_application(thread: Thread):
         return
     log_event("Spr App >", application_message)
     try:
-        await handle_reply_message(application_message)
+        await handle_regular_analysis(application_message)
         await handle_spritework_thread_times(application_message)
     except Exception as message_exception:
         print(" ")
@@ -129,7 +133,7 @@ async def handle_spritework_post(thread: Thread):
         return
 
     log_event("SprWork >", spritework_message)
-    await handle_reply_message(message=spritework_message, auto_spritework=True)
+    await handle_regular_analysis(message=spritework_message, auto_spritework=True)
 
     if user_is_potential_spriter(author):
         await asyncio.sleep(1)
@@ -139,7 +143,7 @@ async def handle_spritework_post(thread: Thread):
 async def handle_reply(message: Message):
     reply_message = await get_reply_message(message)
     log_event("Reply   >", reply_message)
-    await handle_reply_message(reply_message)
+    await handle_regular_analysis(reply_message)
 
 
 async def handle_misnumbered_in_gallery(message: Message, analysis: Analysis):
@@ -241,3 +245,9 @@ async def notify_if_ai(analysis: Analysis, message: Message, analysis_type: Anal
                                    "the users who submit them, without the use of AI at any stage.\n"
                                    "Welcome to the community!")
         await asyncio.sleep(5)
+
+async def attachment_not_an_image(attachment: Attachment) -> bool:
+    attachment_type = attachment.content_type
+    if attachment_type is None:
+        return True
+    return not attachment_type.startswith("image")

@@ -5,6 +5,7 @@ from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, Tex
 from analysis import Analysis
 from analyzer import send_full_analysis, generate_analysis, send_analysis
 from bot.analyzer import send_extra_embeds
+from bot.message_identifier import is_message_from_ignored_bots
 from bot.opt_out_options import is_opted_out_user
 from bot.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
 from bot.utils import fancy_print
@@ -142,8 +143,18 @@ async def handle_spritework_post(thread: Thread):
 
 async def handle_reply(message: Message):
     reply_message = await get_reply_message(message)
+    if is_message_from_ignored_bots(reply_message):     # Ignore replies to Fusion Bot messages
+        return
     log_event("Reply   >", reply_message)
     await handle_regular_analysis(reply_message)
+
+
+async def handle_direct_ping(message: Message):
+    log_event("Ping    >", message)
+    if len(message.attachments) >= 1:
+        await handle_regular_analysis(message)
+    else:
+        await handle_ping_without_attachments(message)
 
 
 async def handle_misnumbered_in_gallery(message: Message, analysis: Analysis):
@@ -156,17 +167,25 @@ async def handle_misnumbered_in_gallery(message: Message, analysis: Analysis):
     if misnumbered_issue is None:
         return
 
-    copied_message = await ctx().pif.logs.send(f"Hi {message.author.mention}, here's your gallery message, you can copy the block "
-                                               f"below and it will have the same text you just sent:\n```{message.content}```")
+    copied_message = await ctx().pif.logs.send(f"Hi {message.author.mention}, here's your gallery message, you can "
+                                               f"copy the block below and it will have the same text you just sent:"
+                                               f"\n```{message.content}```")
     await message.channel.send(content=
                                f"Hi {message.author.mention}, \n\nUnfortunately your latest gallery message had a "
-                               f"**misnumbered dex id**, either in the message or filename, because they didn't match eachother:\n\n"
+                               f"**misnumbered dex id**, either in the message or filename, "
+                               f"because they didn't match eachother:\n\n"
                                f"* **Filename ID: {misnumbered_issue.filename_fusion_id}**\n"
                                f"* **Message ID: {misnumbered_issue.content_fusion_id}**\n\n"
                                f"You can recover and copy your message text at: {copied_message.jump_url} "
                                f"so that you can fix the issue and post it here again.\n\nThank you!",
                                delete_after=20)
     await message.delete()
+
+
+async def handle_ping_without_attachments(message: Message):
+    await message.reply(f"Hi {message.author.name}, were you trying to analyze a sprite?\n"
+                        f"You can either ping @Fusion Bot **in the same message where you upload your image**, or "
+                        f"you can **reply to that image and ping @Fusion Bot in your reply**.")
 
 
 def log_event(decorator: str, event: Message | Thread):

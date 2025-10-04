@@ -1,16 +1,9 @@
 import utils
 from analysis import Analysis
-from bot.utils import is_invalid_fusion_id
+from bot.utils import is_invalid_fusion_id, is_invalid_base_id
 from enums import Severity, IdType
-from issues import (CustomBase, DifferentSprite, EggSprite, IconSprite,
-                    IncomprehensibleSprite, MissingFilename, MissingSprite,
-                    OutOfDex, FileName, PokemonNames, TripleFusionSprite)
-from message_identifier import (have_icon_in_message, have_custom_in_message,
-                                have_egg_in_message, have_base_in_message, have_triple_in_message)
-
-
-def exists(value):
-    return value is not None
+from issues import (CustomBase, DifferentSprite, EggSprite, UnknownSprite, MissingFilename,
+                    MissingSprite, OutOfDex, FileName, PokemonNames, TripleFusionSprite)
 
 
 class ContentContext:
@@ -28,44 +21,29 @@ class ContentContext:
             self.content_fusion_id = None
 
 
-    def have_two_values(self):
-        return exists(self.filename_fusion_id) and exists(self.content_fusion_id)
+    def has_both_fusion_ids(self):
+        return (self.filename_fusion_id is not None) and (self.content_fusion_id is not None)
 
-    def have_one_value(self):
-        return exists(self.filename_fusion_id) or exists(self.content_fusion_id)
+    def handle_only_filename_id(self, analysis: Analysis):
+        analysis.fusion_id = self.filename_fusion_id
+        self.handle_dex_verification(analysis, self.filename_fusion_id)
 
-    def handle_one_value(self, analysis: Analysis):
-        if self.content_fusion_id is not None:
-            analysis.severity = Severity.refused
-            analysis.issues.add(MissingFilename())
-            filename = analysis.get_filename()
-            analysis.issues.add(FileName(filename))
-        elif self.filename_fusion_id is not None:
-            analysis.fusion_id = self.filename_fusion_id
-            self.handle_dex_verification(analysis, self.filename_fusion_id)
-
-    def handle_two_values(self, analysis: Analysis):
+    def handle_with_both_ids(self, analysis: Analysis):
         if self.filename_fusion_id != self.content_fusion_id:
             if self.filename_fusion_id not in self.content_fusion_ids_list:
-                self.handle_two_different_values(analysis)
+                self.handle_mismatched_ids(analysis)
             else:
                 self.content_fusion_id = self.filename_fusion_id
                 analysis.fusion_id = self.filename_fusion_id
         else:
-            self.handle_two_same_values(analysis)
-        if self.filename_fusion_id is not None:
-            self.handle_dex_verification(analysis, self.filename_fusion_id)
-
-    def handle_two_different_values(self, analysis: Analysis):
-        if self.filename_fusion_id is not None and self.content_fusion_id is not None:
-            analysis.severity = Severity.refused
-            issue = DifferentSprite(self.filename_fusion_id, self.content_fusion_id)
-            analysis.issues.add(issue)
-            self.handle_dex_verification(analysis, self.content_fusion_id)
-
-    def handle_two_same_values(self, analysis: Analysis):
-        if self.filename_fusion_id is not None:
             analysis.fusion_id = self.filename_fusion_id
+        self.handle_dex_verification(analysis, self.filename_fusion_id)
+
+    def handle_mismatched_ids(self, analysis: Analysis):
+        analysis.severity = Severity.refused
+        issue = DifferentSprite(self.filename_fusion_id, self.content_fusion_id)
+        analysis.issues.add(issue)
+        self.handle_dex_verification(analysis, self.content_fusion_id)
 
     def handle_dex_verification(self, analysis: Analysis, fusion_id: str):
         if self.is_invalid_fusion_dex_id(fusion_id) or self.is_invalid_custom_base_or_egg_dex_id(fusion_id):
@@ -81,17 +59,17 @@ class ContentContext:
             handle_pokemon_names(analysis, fusion_id)
 
     def is_invalid_custom_base_or_egg_dex_id(self, dex_id: str) -> bool:
-        return (self.is_custom_base or self.is_egg_sprite) and utils.is_invalid_base_id(dex_id)
+        return (self.is_custom_base or self.is_egg_sprite) and is_invalid_base_id(dex_id)
 
     def is_invalid_fusion_dex_id(self, fusion_id: str) -> bool:
         # Works for triple fusions too
-        return (not (self.is_custom_base or self.is_egg_sprite)) and utils.is_invalid_fusion_id(fusion_id)
+        return (not (self.is_custom_base or self.is_egg_sprite)) and is_invalid_fusion_id(fusion_id)
 
 
 def main(analysis: Analysis):
     if (analysis.specific_attachment is not None)\
-            or analysis.have_attachment()\
-            or analysis.have_zigzag_embed():
+            or analysis.has_attachment()\
+            or analysis.has_zigzag_embed():
         handle_some_content(analysis)
         return
 
@@ -101,12 +79,21 @@ def main(analysis: Analysis):
 def handle_some_content(analysis: Analysis):
     content_context = ContentContext(analysis)
     analysis.attachment_url = analysis.get_attachment_url()
-    if content_context.have_two_values():
-        content_context.handle_two_values(analysis)
-    elif content_context.have_one_value():
-        content_context.handle_one_value(analysis)
+    if content_context.has_both_fusion_ids():
+        content_context.handle_with_both_ids(analysis)
+    elif content_context.filename_fusion_id is not None:
+        content_context.handle_only_filename_id(analysis)
+    elif content_context.content_fusion_id is not None:
+        handle_no_filename_id(analysis)
     else:
-        handle_zero_value(analysis)
+        handle_unknown_id(analysis)
+
+
+def handle_no_filename_id(analysis: Analysis):
+    analysis.severity = Severity.refused
+    analysis.issues.add(MissingFilename())
+    filename = analysis.get_filename()
+    analysis.issues.add(FileName(filename))
 
 
 def handle_no_content(analysis: Analysis):
@@ -114,22 +101,11 @@ def handle_no_content(analysis: Analysis):
     analysis.issues.add(MissingSprite())
 
 
-def handle_zero_value(analysis: Analysis):
+def handle_unknown_id(analysis: Analysis):
     analysis.severity = Severity.ignored
-    if have_egg_in_message(analysis.message):
-        analysis.issues.add(EggSprite())
-    elif have_icon_in_message(analysis.message):
-        analysis.issues.add(IconSprite())
-    elif have_custom_in_message(analysis.message):
-        analysis.issues.add(CustomBase())
-    elif have_base_in_message(analysis.message):
-        analysis.issues.add(CustomBase())
-    elif have_triple_in_message(analysis.message):
-        analysis.issues.add(TripleFusionSprite())
-    else:
-        analysis.issues.add(IncomprehensibleSprite())
-        filename = analysis.get_filename()
-        analysis.issues.add(FileName(filename))
+    analysis.issues.add(UnknownSprite())
+    filename = analysis.get_filename()
+    analysis.issues.add(FileName(filename))
 
 
 def handle_pokemon_names(analysis: Analysis, fusion_id: str):

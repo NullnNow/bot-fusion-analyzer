@@ -1,12 +1,11 @@
 import analysis_content as analysis_content
 import analysis_sprite as analysis_sprite
-import gallery_analysis
 from analysis import Analysis, generate_file_from_image, get_autogen_file
 from discord.message import Message, Attachment
 from discord import User, TextChannel, Thread, DMChannel
 
 from bot.opt_out_options import HideAutoAnalysis
-from enums import AnalysisType, Severity
+from enums import AnalysisType
 
 
 def generate_analysis(
@@ -17,8 +16,6 @@ def generate_analysis(
     analysis = Analysis(message, specific_attachment, analysis_type)
     analysis_content.main(analysis)
     analysis_sprite.main(analysis)
-    if analysis_type.is_gallery():
-        gallery_analysis.main()
     analysis.generate_embed()
     return analysis
 
@@ -28,7 +25,7 @@ def generate_analysis(
 async def send_full_analysis(analysis: Analysis,
                              channel: TextChannel|Thread|DMChannel,
                              author: User):
-    if (analysis.severity != Severity.accepted) and analysis.type.is_gallery():
+    if analysis.severity.is_warn_severity() and analysis.type.is_gallery():
         await send_analysis(analysis, channel, author)
     else:
         await send_analysis(analysis, channel)

@@ -3390,6 +3390,48 @@
         "name": "relicanth",
         "typos": [],
         "display_name":"Relicanth"
+    },
+    {
+        "id":"566",
+        "name": "woobat",
+        "typos": [],
+        "display_name":"Woobat"
+    },
+    {
+        "id":"567",
+        "name": "swoobat",
+        "typos": [],
+        "display_name":"Swoobat"
+    },
+    {
+        "id":"568",
+        "name": "tynamo",
+        "typos": [],
+        "display_name":"Tynamo"
+    },
+    {
+        "id":"569",
+        "name": "eelektrik",
+        "typos": [],
+        "display_name":"Eelektrik"
+    },
+    {
+        "id":"570",
+        "name": "eelektross",
+        "typos": [],
+        "display_name":"Eelektross"
+    },
+    {
+        "id":"571",
+        "name": "skrelp",
+        "typos": [],
+        "display_name":"Skrelp"
+    },
+    {
+        "id":"572",
+        "name": "dragalge",
+        "typos": [],
+        "display_name":"Dragalge"
     }
 
     ]

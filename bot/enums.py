@@ -5,22 +5,21 @@ import discord
 
 class Description(str, Enum):
     missing_file        = "Missing sprite"
-    missing_file_name   = "Missing file name"
-    different_fusion_id = "Different ID"
+    missing_filename    = "Missing filename"
+    different_fusion_id = "Different IDs"
     colour_excess       = "Color excess"
     semi_transparent    = "Semi transparent pixels"
-    intended_trans      = "Intended transparency"
+    intentional_transp  = "Intentional transparency"
     half_pixels         = "Half pixels detected"
     colour_amount       = "Colors"
     file_name           = "Filename"
     invalid_fusion_id   = "Invalid fusion ID"
     not_png             = "Invalid image format"
     invalid_size        = "Invalid size"
-    icon                = "Icon sprite"
     custom              = "custom base"
     egg                 = "egg sprite"
     triple              = "Triple fusion"
-    incomprehensible    = "Incomprehensible name"
+    unknown_sprite      = "Unknown filename"
     no_transparency     = "Missing transparency"
     aseprite_user       = "Aseprite"
     graphics_gale_user  = "GraphicsGale"
@@ -35,6 +34,9 @@ class Severity(Enum):
     ignored         = "Ignored"
     controversial   = "Controversial"
     refused         = "Invalid"
+
+    def is_warn_severity(self):
+        return self != Severity.accepted
 
 
 class DiscordColour(Enum):

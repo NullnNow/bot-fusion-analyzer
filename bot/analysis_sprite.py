@@ -1,6 +1,6 @@
 import requests
 from analysis import Analysis
-from utils import is_intended_transparency
+from utils import is_intentional_transparency
 from enums import Severity
 from exceptions import TransparencyException
 from issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
@@ -8,7 +8,7 @@ from issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
                     HalfPixels, InvalidSize, MissingTransparency,
                     SimilarityAmount, SemiTransparency, CustomBase,
                     SimilarityExcessControversial, SimilarityExcessRefused,
-                    MisplacedGrid, EggSprite, NotPng, IntendedTransparency)
+                    MisplacedGrid, EggSprite, NotPng, IntentionalTransparency)
 
 # Pillow
 from PIL.Image import open as image_open
@@ -115,19 +115,24 @@ class SpriteContext():
 
     def handle_sprite_size(self, analysis: Analysis):
         image_size = self.image.size
-        if image_size != self.valid_size:
-            analysis.size_issue = True
-            analysis.severity = Severity.refused
-            analysis.issues.add(InvalidSize(image_size))
-            if image_size == (1024, 1024):
-                analysis.might_be_ai = True
+        if image_size == self.valid_size:
+            analysis.ai_suspicion -= 4
+            return
+
+        analysis.size_issue = True
+        analysis.severity = Severity.refused
+        analysis.issues.add(InvalidSize(image_size))
+        if image_size == (1024, 1024):
+            analysis.ai_suspicion += 8
+        elif image_size == (96, 96):
+            analysis.ai_suspicion -= 2
 
     def handle_sprite_colors(self, analysis: Analysis):
         all_colors = self.image.getcolors(ALL_COLOR_LIMIT)
         if is_color_excess(all_colors):
             analysis.severity = Severity.refused
             analysis.issues.add(ColorOverExcess(ALL_COLOR_LIMIT))
-            analysis.might_be_ai = True
+            analysis.ai_suspicion += 6
         else:
             self.handle_color_count(analysis, all_colors)
             self.handle_color_limit(analysis)
@@ -135,6 +140,7 @@ class SpriteContext():
                 self.handle_color_similarity(analysis)
             self.handle_aseprite(analysis)
             self.handle_graphics_gale(analysis)
+            analysis.ai_suspicion -= 2
 
     def handle_color_count(self, analysis: Analysis, all_colors: list):
         try:
@@ -143,7 +149,7 @@ class SpriteContext():
         except TransparencyException:
             analysis.severity = Severity.refused
             analysis.issues.add(MissingTransparency())
-            analysis.might_be_ai = True
+            analysis.ai_suspicion += 4
 
     def handle_color_amount(self, analysis: Analysis, all_colors):
         all_amount = len(all_colors)
@@ -193,8 +199,8 @@ class SpriteContext():
         if transparency_amount == 0:
             return
 
-        if is_intended_transparency(analysis.message):
-            analysis.issues.add(IntendedTransparency())
+        if is_intentional_transparency(analysis.message):
+            analysis.issues.add(IntentionalTransparency())
             return
         analysis.transparency_issue = True
         analysis.transparency_image = image
@@ -214,7 +220,7 @@ class SpriteContext():
         return similarity_amount
 
     def handle_sprite_half_pixels(self, analysis: Analysis):
-        if analysis.size_issue is True:
+        if analysis.size_issue:
             return
 
         half_pixels_amount, image = self.highlight_half_pixels(strict_grid=True)

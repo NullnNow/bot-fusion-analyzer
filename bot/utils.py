@@ -9,8 +9,9 @@ from discord.member import Member
 
 from bot.enums import IdType
 
-MAX_DEX_ID = 565
+MAX_DEX_ID = 572
 AUTOGEN_MAX_ID = 501
+NECROZMA_DEX_ID = 450
 
 
 LETTER_AND_PNG_PATTERN = r'[a-z]{0,1}\.png$'
@@ -64,8 +65,8 @@ def is_missing_autogen(fusion_id: str):
     split_fusion_id = fusion_id.split(".")
     head_id = int(split_fusion_id[0])
     body_id = int(split_fusion_id[1])
-    # Special case: Necrozma bodies (450) are just Ultra Necrozma again
-    if body_id == 450:
+    # Special case: Necrozma bodies are just Ultra Necrozma again
+    if body_id == NECROZMA_DEX_ID:
         return True
     return head_id > AUTOGEN_MAX_ID or body_id > AUTOGEN_MAX_ID
 
@@ -142,10 +143,8 @@ def extract_fusion_ids_from_content(message: Message, id_type: IdType):
         search_pattern = TEXT_PATTERN_CUSTOM_ID
     elif id_type.is_triple_fusion():
         search_pattern = TEXT_PATTERN_TRIPLE_ID
-    elif id_type.is_fusion():
+    else:   # Search for fusion content IDs if the filename is unknown too
         search_pattern = TEXT_PATTERN_FUSION_ID
-    else:
-        return id_list
 
     iterator = re.finditer(search_pattern, content)
     for result in iterator:
@@ -177,11 +176,11 @@ def id_to_name_map():  # Thanks Greystorm for the util and file
         return {element["id"]: element["display_name"] for element in data["pokemon"]}
 
 
-def is_intended_transparency(message: Message) -> bool:
+def is_intentional_transparency(message: Message) -> bool:
     content = message.content
     if not content:
         return False
-    result = re.search(r'[Ii]ntended [Tt]ransparency', content)
+    result = re.search(r'(?i)\b(intentional|intended)\s+transparency\b', content)
     return result is not None
 
 

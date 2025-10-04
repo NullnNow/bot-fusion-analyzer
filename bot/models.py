@@ -7,16 +7,19 @@ class ServerContext():
     logs: Channel
     debug: Channel
     zigzagoon: Channel
+    bot_chat: Channel
     def __init__(self,
             server: Guild,
             logs: Channel,
             debug: Channel,
-            zigzagoon: Channel
+            zigzagoon: Channel,
+            bot_chat: Channel
             ) -> None:
         self.server = server
         self.logs = logs
         self.debug = debug
         self.zigzagoon = zigzagoon
+        self.bot_chat = bot_chat
 
 
 class GlobalContext():

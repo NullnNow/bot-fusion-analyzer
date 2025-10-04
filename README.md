@@ -9,9 +9,13 @@ Discord bot, provides feedback on custom sprites for the game [Pokémon Infinite
 - **Greystorm** for giving permission to use various utilities from spritebot
 
 # Changelog
+## Version 2.5
+- **Ping analysis:** if you simply ping the bot, it will analyze any sprites attached to that message
+- Fix: archived threads weren't being fetched properly in spriter applications
+- Fix: ignore attachments that aren't images
+
 ## Version 2.4
-- **Intended transparency**: by adding this keyword to gallery posts, Fusion Bot won't reject a sprite that has semi transparent pixels
-- "Ignored" tier sprites will also come with a ping in the gallery, to warn when the filename is not correct
+- **Intentional transparency**: by adding this keyword to gallery posts, Fusion Bot won't reject a sprite that has semi transparent pixels
 - Support for the new egg sprite filename format (it's now 123_egg.png)
 - Tutorial Mode improvements and new sections
 - Basic AI detection and warnings

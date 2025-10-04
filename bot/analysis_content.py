@@ -7,13 +7,14 @@ from issues import (CustomBase, DifferentSprite, EggSprite, UnknownSprite, Missi
 
 
 class ContentContext:
+    id_type: IdType
     def __init__(self, analysis: Analysis):
 
-        self.filename_fusion_id, analysis.id_type = analysis.extract_fusion_id_from_filename()
-        self.is_custom_base = analysis.id_type.is_custom_base()
-        self.is_egg_sprite = analysis.id_type.is_egg()
+        self.filename_fusion_id, self.id_type = analysis.extract_fusion_id_from_filename()
+        self.is_custom_base = self.id_type.is_custom_base()
+        self.is_egg_sprite = self.id_type.is_egg()
 
-        self.content_fusion_ids_list = utils.extract_fusion_ids_from_content(analysis.message, analysis.id_type)
+        self.content_fusion_ids_list = utils.extract_fusion_ids_from_content(analysis.message, self.id_type)
 
         if self.content_fusion_ids_list:
             self.content_fusion_id = self.content_fusion_ids_list[0]
@@ -52,7 +53,7 @@ class ContentContext:
 
         elif self.is_custom_base or self.is_egg_sprite:
             handle_pokemon_name(analysis, fusion_id, self.is_egg_sprite)
-        elif analysis.id_type.is_triple_fusion():
+        elif self.id_type.is_triple_fusion():
             analysis.issues.add(TripleFusionSprite())
         else:
             # Regular fusions

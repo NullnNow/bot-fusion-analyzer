@@ -89,7 +89,7 @@ async def handle_regular_analysis(message: Message, auto_spritework: bool = Fals
     else:
         analysis_type = AnalysisType.ping_reply
     for specific_attachment in message.attachments:
-        if await attachment_not_an_image(specific_attachment):
+        if attachment_not_an_image(specific_attachment):
             continue
         analysis = generate_analysis(message, specific_attachment, analysis_type)
         try:
@@ -268,7 +268,7 @@ async def notify_if_ai(analysis: Analysis, message: Message, analysis_type: Anal
                                    "Welcome to the community!")
         await asyncio.sleep(5)
 
-async def attachment_not_an_image(attachment: Attachment) -> bool:
+def attachment_not_an_image(attachment: Attachment) -> bool:
     attachment_type = attachment.content_type
     if attachment_type is None:
         return True

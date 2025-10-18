@@ -10,6 +10,11 @@ from bot.setup import get_bot_id
 ZIGZAG_ID = 1185671488611819560 #1185671488611819560
 YANMEGA_ID = 204255221017214977
 
+TAG_CUSTOMIZATION_ID = 1200461437726883921
+TAG_NON_IF_ID = 1058148169986342963
+TAG_OTHER_ID = 1051367034673434634
+IGNORED_SPRITEWORK_TAGS = [TAG_CUSTOMIZATION_ID, TAG_NON_IF_ID, TAG_OTHER_ID]
+
 PATTERN_CUSTOM_BASE = r'[cC]ustom [bB]ase'
 
 
@@ -66,6 +71,13 @@ def is_spritework_post(thread: Thread):
     if thread.parent.type != discord.ChannelType.forum:
         return False
     return thread.parent_id == id_spritework
+
+
+def has_ignored_spritework_tags(thread: Thread) -> bool:
+    for tag in thread.applied_tags:
+        if tag.id in IGNORED_SPRITEWORK_TAGS:
+            return True
+    return False
 
 
 def has_custom_base_in_message(message: Message) -> bool:

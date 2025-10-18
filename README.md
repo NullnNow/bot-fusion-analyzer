@@ -11,6 +11,7 @@ Discord bot, provides feedback on custom sprites for the game [Pokémon Infinite
 # Changelog
 ## Version 2.5
 - **Ping analysis:** if you simply ping the bot, it will analyze any sprites attached to that message
+- Automatic analysis will not happen if the post has certain tags, to avoid unwanted analysis on Non-IF or trainer cards
 - Fix: archived threads weren't being fetched properly in spriter applications
 - Fix: ignore attachments that aren't images
 

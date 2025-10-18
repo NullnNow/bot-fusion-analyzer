@@ -5,7 +5,7 @@ from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, Tex
 from analysis import Analysis
 from analyzer import send_full_analysis, generate_analysis, send_analysis
 from bot.analyzer import send_extra_embeds
-from bot.message_identifier import is_message_from_ignored_bots
+from bot.message_identifier import is_message_from_ignored_bots, has_ignored_spritework_tags
 from bot.opt_out_options import is_opted_out_user
 from bot.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
 from bot.utils import fancy_print
@@ -39,7 +39,7 @@ async def handle_gallery(message: Message, is_assets: bool = False):
         log_event("Gallery >", message)
 
     for specific_attachment in message.attachments:
-        if await attachment_not_an_image(specific_attachment):
+        if attachment_not_an_image(specific_attachment):
             continue
         if is_assets:
             analysis_type = AnalysisType.assets_gallery
@@ -125,6 +125,9 @@ async def handle_spritework_thread_times(message: Message):
 
 
 async def handle_spritework_post(thread: Thread):
+    if has_ignored_spritework_tags(thread):
+        return
+
     spritework_message = await fetch_thread_message(thread)
     if not spritework_message:
         return

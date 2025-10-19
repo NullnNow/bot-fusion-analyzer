@@ -1,11 +1,10 @@
-import analysis_content as analysis_content
-import analysis_sprite as analysis_sprite
-from analysis import Analysis, generate_file_from_image, get_autogen_file
 from discord.message import Message, Attachment
 from discord import User, TextChannel, Thread, DMChannel
 
-from bot.opt_out_options import HideAutoAnalysis
-from enums import AnalysisType
+from bot.spritework.opt_out_options import HideAutoAnalysis
+from bot.misc.enums import AnalysisType
+from . import analysis_content, analysis_sprite
+from .analysis import Analysis, generate_file_from_image, get_autogen_file
 
 
 def generate_analysis(

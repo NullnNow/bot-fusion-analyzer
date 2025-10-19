@@ -2,10 +2,9 @@ import re
 import discord
 from discord import Message, Thread
 
-from bot import setup
-from bot.bot_context import (id_channel_gallery_pif, id_channel_assets_pif,
-                             id_spriter_apps_pif, id_spritework)
-from bot.setup import get_bot_id
+from . import setup
+from .bot_context import (id_channel_gallery_pif, id_channel_assets_pif,
+                                     id_spriter_apps_pif, id_spritework)
 
 ZIGZAG_ID = 1185671488611819560 #1185671488611819560
 YANMEGA_ID = 204255221017214977
@@ -53,7 +52,7 @@ def is_message_from_ignored_bots(message: Message) -> bool:
 
 def is_mentioning_bot(message: Message) -> bool:
     result = False
-    fusion_bot_id = get_bot_id()
+    fusion_bot_id = setup.get_bot_id()
     for user in message.mentions:
         if fusion_bot_id == user.id:
             result = True

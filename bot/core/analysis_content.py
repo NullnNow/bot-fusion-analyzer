@@ -1,9 +1,8 @@
-import utils
-from analysis import Analysis
-from bot.utils import is_invalid_fusion_id, is_invalid_base_id
-from enums import Severity, IdType
-from issues import (CustomBase, DifferentSprite, EggSprite, UnknownSprite, MissingFilename,
-                    MissingSprite, OutOfDex, FileName, PokemonNames, TripleFusionSprite)
+import bot.misc.utils as utils
+from bot.misc.enums import Severity, IdType
+from .analysis import Analysis
+from .issues import (CustomBase, DifferentSprite, EggSprite, UnknownSprite, MissingFilename,
+                     MissingSprite, OutOfDex, FileName, PokemonNames, TripleFusionSprite)
 
 
 class ContentContext:
@@ -60,11 +59,11 @@ class ContentContext:
             handle_pokemon_names(analysis, fusion_id)
 
     def is_invalid_custom_base_or_egg_dex_id(self, dex_id: str) -> bool:
-        return (self.is_custom_base or self.is_egg_sprite) and is_invalid_base_id(dex_id)
+        return (self.is_custom_base or self.is_egg_sprite) and utils.is_invalid_base_id(dex_id)
 
     def is_invalid_fusion_dex_id(self, fusion_id: str) -> bool:
         # Works for triple fusions too
-        return (not (self.is_custom_base or self.is_egg_sprite)) and is_invalid_fusion_id(fusion_id)
+        return (not (self.is_custom_base or self.is_egg_sprite)) and utils.is_invalid_fusion_id(fusion_id)
 
 
 def main(analysis: Analysis):

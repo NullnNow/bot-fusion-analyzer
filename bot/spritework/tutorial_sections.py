@@ -50,7 +50,7 @@ similarity = TutorialSection(
 grid = TutorialSection(
     title="Grid alignment",
     description="What does it mean if it says 'not aligned to the grid'?",
-    content="If you see **not aligned to the grid** in a bot analysis, it means that after upscaling your sprite to "
+    content="If you see **not aligned to the grid** in a bot core, it means that after upscaling your sprite to "
             "288x288, you may have moved it in the canvas. But don't worry about this, as when the sprite is brought "
             "into the game, this misalignment will be automatically fixed.\n"
             "This warning on the bot is mostly so that people are aware of it."
@@ -84,7 +84,7 @@ half_pixels = TutorialSection(
 transparency = TutorialSection(
     title="Semi transparent pixels",
     description="What is semi transparency and how can it be avoided?",
-    content="If you see **semi transparent pixels** in the analysis, an additional embed will appear. They are "
+    content="If you see **semi transparent pixels** in the core, an additional embed will appear. They are "
             "highlighted in pink against the silhouette of your sprite. This kind of pixel is neither fully opaque "
             "or fully transparent, and may be caused by how certain programs upscale images. Another cause can be "
             "tools that are not at full transparency (such as a brush tool instead of using a pixel art pencil).\n"

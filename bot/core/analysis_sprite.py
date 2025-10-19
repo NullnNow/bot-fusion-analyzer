@@ -1,14 +1,14 @@
 import requests
-from analysis import Analysis
-from utils import is_intentional_transparency
-from enums import Severity
-from exceptions import TransparencyException
-from issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
-                    ColorExcessRefused, ColorOverExcess, GraphicsGaleUser,
-                    HalfPixels, InvalidSize, MissingTransparency,
-                    SimilarityAmount, SemiTransparency, CustomBase,
-                    SimilarityExcessControversial, SimilarityExcessRefused,
-                    MisplacedGrid, EggSprite, NotPng, IntentionalTransparency)
+
+from bot.misc.enums import Severity
+from bot.misc.exceptions import TransparencyException
+from .analysis import Analysis
+from .issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
+                     ColorExcessRefused, ColorOverExcess, GraphicsGaleUser,
+                     HalfPixels, InvalidSize, MissingTransparency,
+                     SimilarityAmount, SemiTransparency, CustomBase,
+                     SimilarityExcessControversial, SimilarityExcessRefused,
+                     MisplacedGrid, EggSprite, NotPng, IntentionalTransparency)
 
 # Pillow
 from PIL.Image import open as image_open
@@ -199,7 +199,7 @@ class SpriteContext():
         if transparency_amount == 0:
             return
 
-        if is_intentional_transparency(analysis.message):
+        if utils.is_intentional_transparency(analysis.message):
             analysis.issues.add(IntentionalTransparency())
             return
         analysis.transparency_issue = True

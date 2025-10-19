@@ -7,7 +7,7 @@ from discord.asset import Asset
 from discord.user import User, ClientUser
 from discord.member import Member
 
-from bot.enums import IdType
+from .enums import IdType
 
 MAX_DEX_ID = 572
 AUTOGEN_MAX_ID = 501
@@ -51,7 +51,7 @@ SPOILER_PATTERN_EGG_ID = rf'^SPOILER_{FILENAME_EGG_ID}'
 
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-NAMES_JSON_FILE = os.path.join(CURRENT_DIR, "..", "data", "PokemonNames.json")
+NAMES_JSON_FILE = os.path.join(CURRENT_DIR, "..", "..", "data", "PokemonNames.json")
 
 
 def get_filename_from_image_url(url: str):

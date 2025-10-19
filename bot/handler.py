@@ -2,18 +2,18 @@ import asyncio
 
 import discord
 from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, TextChannel, Attachment
-from analysis import Analysis
-from analyzer import send_full_analysis, generate_analysis, send_analysis
-from bot.analyzer import send_extra_embeds
-from bot.message_identifier import is_message_from_ignored_bots, has_ignored_spritework_tags
-from bot.opt_out_options import is_opted_out_user
-from bot.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
-from bot.utils import fancy_print
-from issues import DifferentSprite # If the package is named bot.issues, Python thinks they're different types
-from bot.setup import ctx
-from enums import AnalysisType, Severity
-from message_identifier import is_assets_gallery
-from spritework_checker import get_spritework_thread_times
+from bot.core.analysis import Analysis
+from bot.core.analyzer import send_full_analysis, generate_analysis, send_analysis
+from bot.core.analyzer import send_extra_embeds
+from bot.context.message_identifier import is_message_from_ignored_bots, has_ignored_spritework_tags
+from bot.spritework.opt_out_options import is_opted_out_user
+from bot.spritework.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
+from bot.misc.utils import fancy_print
+from bot.core.issues import DifferentSprite
+from bot.context.setup import ctx
+from bot.misc.enums import AnalysisType, Severity
+from bot.context.message_identifier import is_assets_gallery
+from bot.spritework.spritework_checker import get_spritework_thread_times
 
 
 ERROR_EMOJI_NAME = "NANI"

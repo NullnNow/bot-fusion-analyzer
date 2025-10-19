@@ -5,7 +5,7 @@ import math
 from aiohttp.abc import HTTPException
 from discord import Embed, Message, Thread, Forbidden, NotFound, HTTPException
 
-from bot.setup import get_bot_client, ctx
+from bot.context.setup import get_bot_client, ctx
 
 CHANNEL_URL_PATTERN = r"discord\.com/channels/(\d+)/(\d+)"
 CHANNEL_ALT_PATTERN = r"discordapp\.com/channels/(\d+)/(\d+)"

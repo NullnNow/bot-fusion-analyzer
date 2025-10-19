@@ -1,6 +1,6 @@
 from discord import Client, Guild, TextChannel
 
-from bot.models import ServerContext, GlobalContext
+from .models import ServerContext, GlobalContext
 
 # Doodledoo test server
 id_server_doodledoo          = 446241769462562827

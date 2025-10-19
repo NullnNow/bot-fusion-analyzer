@@ -5,10 +5,10 @@ import discord
 from discord import Member, ButtonStyle, Interaction, User, Message, HTTPException, Forbidden, NotFound
 from discord.ui import View, Button
 
-from bot.utils import fancy_print
+from bot.misc.utils import fancy_print
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-OPT_OUT_FILE = os.path.join(CURRENT_DIR, "..", "data", "OptedOutUsers.json")
+OPT_OUT_FILE = os.path.join(CURRENT_DIR, "..", "..", "data", "OptedOutUsers.json")
 
 
 class HideAutoAnalysis(View):
@@ -18,7 +18,7 @@ class HideAutoAnalysis(View):
         self.original_caller = caller
         super().__init__(timeout=600)   # After 10 mins it won't show the remove/opt out buttons anymore
 
-    @discord.ui.button(label="Hide analysis", style=ButtonStyle.secondary)
+    @discord.ui.button(label="Hide core", style=ButtonStyle.secondary)
     async def hide_auto_analysis(self, interaction: Interaction, button: Button):
         if interaction.user.id == self.original_caller.id:
             await interaction.message.delete()
@@ -32,7 +32,7 @@ class HideAutoAnalysis(View):
             await interaction.message.edit(view=None)
             opt_out_view = OptOutConfirmation(self.original_caller)
             await interaction.response.send_message(
-                content="Do you want to permanently opt out of automatic Fusion Bot analysis on new spritework posts?",
+                content="Do you want to permanently opt out of automatic Fusion Bot core on new spritework posts?",
                 view=opt_out_view,delete_after=60
             )
         else:
@@ -46,7 +46,7 @@ class HideAutoAnalysis(View):
         try:
             await self.message.edit(view=None)
         except (HTTPException, Forbidden, NotFound, TypeError) as error:
-            error_log = f"Exception {error} while trying to timeout auto analysis"
+            error_log = f"Exception {error} while trying to timeout auto core"
             if self.message.thread:
                 error_log = error_log + f" in {self.message.thread.name}"
             elif self.message.channel:
@@ -71,7 +71,7 @@ class OptOutConfirmation(View):
         else:
             await different_user_response(interaction, self.original_caller)
 
-    @discord.ui.button(label="Cancel (keep automatic analysis)", style=ButtonStyle.secondary)
+    @discord.ui.button(label="Cancel (keep automatic core)", style=ButtonStyle.secondary)
     async def cancel_opt_out(self, interaction: Interaction, button: Button):
         if interaction.user.id == self.original_caller.id:
             await interaction.message.delete()

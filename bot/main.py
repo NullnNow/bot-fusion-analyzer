@@ -8,12 +8,12 @@ from discord import app_commands, Thread
 from discord.message import Message
 from discord.user import User
 
-from bot.setup import set_bot_up, ctx
+from bot.context.setup import set_bot_up, ctx
+from bot.context.message_identifier import (is_zigzag_galpost, is_sprite_gallery, is_assets_custom_base,
+                                            is_mentioning_reply, is_spriter_application, is_message_from_ignored_bots,
+                                            is_spritework_post, is_mentioning_bot)
 from bot.handler import (handle_zigzag_galpost, handle_sprite_gallery, handle_assets_gallery,
                          handle_spriter_application, handle_reply, handle_spritework_post, handle_direct_ping)
-from bot.message_identifier import (is_zigzag_galpost, is_sprite_gallery, is_assets_custom_base,
-                                    is_mentioning_reply, is_spriter_application, is_message_from_ignored_bots,
-                                    is_spritework_post, is_mentioning_bot)
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 

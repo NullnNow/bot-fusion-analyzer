@@ -8,9 +8,9 @@ from discord.embeds import Embed
 from discord.file import File
 from discord.message import Attachment, Message
 
-import utils
-from enums import DiscordColour, Severity, AnalysisType, IdType
-from issues import Issues, PokemonNames
+import bot.misc.utils as utils
+from bot.misc.enums import DiscordColour, Severity, AnalysisType, IdType
+from .issues import Issues, PokemonNames
 
 DICT_SEVERITY_COLOUR = {
     Severity.accepted : DiscordColour.green,
@@ -184,7 +184,7 @@ def get_autogen_file(fusion_id: str) -> File|None:
 def cut_from_spritesheet(head_id: str, body_id: str) -> File:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     filename = head_id + ".png"
-    head_sheet_dir = os.path.join(current_dir, "..", "data", "spritesheets_autogen", filename)
+    head_sheet_dir = os.path.join(current_dir, "..", "..", "data", "spritesheets_autogen", filename)
     spritesheet = image_open(head_sheet_dir)
 
     # ------------------- SPRITESHEET FORMAT -------------------

@@ -1,4 +1,4 @@
-from enums import Description, Severity
+from bot.misc.enums import Description, Severity
 
 
 class Issue():

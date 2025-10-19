@@ -1,8 +1,8 @@
 from discord import Client
-from bot import utils
-from bot.bot_context import BotContext
-from bot.exceptions import MissingBotContext
-from bot.models import GlobalContext
+from bot.misc import utils
+from bot.misc.exceptions import MissingBotContext
+from .bot_context import BotContext
+from .models import GlobalContext
 
 bot_client = None
 bot_id = None

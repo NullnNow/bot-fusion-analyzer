@@ -6,9 +6,9 @@ from colormath.color_objects import sRGBColor
 from discord import Interaction, DMChannel
 from discord.embeds import Embed
 
-import analysis_sprite
-from bot.tutorial_mode import PromptButtonsView
-from bot.utils import fancy_print
+from bot.core import analysis_sprite
+from bot.spritework.tutorial_mode import PromptButtonsView
+from bot.misc.utils import fancy_print
 
 HELP_RESPONSE = ("Do you need help using the Fusion Bot to analyze sprites?\n"
             "You can use it by **mentioning the bot** (using @) **while replying to a sprite**!\n"

@@ -3,7 +3,7 @@ from discord import User, TextChannel, Thread, DMChannel
 
 from bot.spritework.opt_out_options import HideAutoAnalysis
 from bot.misc.enums import AnalysisType
-from . import analysis_content, analysis_sprite
+from . import content_analysis, sprite_analysis
 from .analysis import Analysis, generate_file_from_image, get_autogen_file
 
 
@@ -13,8 +13,8 @@ def generate_analysis(
         analysis_type: AnalysisType|None = None):
 
     analysis = Analysis(message, specific_attachment, analysis_type)
-    analysis_content.main(analysis)
-    analysis_sprite.main(analysis)
+    content_analysis.main(analysis)
+    sprite_analysis.main(analysis)
     analysis.generate_embed()
     return analysis
 

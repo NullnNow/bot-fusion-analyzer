@@ -77,7 +77,7 @@ class SpriteContext():
         self.similar_color_dict: dict = {}
 
         # To both cover:
-        # replied custom bases detected in analysis_content
+        # replied custom bases detected in content_analysis
         # and custom bases from assets gallery
 
         if analysis.type.is_assets_gallery() or analysis.issues.has_issue(CustomBase):

@@ -46,7 +46,7 @@ class ContentContext:
         self.handle_dex_verification(analysis, self.content_fusion_id)
 
     def handle_dex_verification(self, analysis: Analysis, fusion_id: str):
-        if self.is_invalid_fusion_dex_id(fusion_id) or self.is_invalid_custom_base_or_egg_dex_id(fusion_id):
+        if self.is_invalid_id(fusion_id):
             analysis.severity = Severity.refused
             analysis.issues.add(OutOfDex(fusion_id))
 
@@ -58,7 +58,12 @@ class ContentContext:
             # Regular fusions
             handle_pokemon_names(analysis, fusion_id)
 
+    def is_invalid_id(self, dex_id):
+        return (self.is_invalid_fusion_dex_id(dex_id)
+                or self.is_invalid_custom_base_or_egg_dex_id(dex_id))
+
     def is_invalid_custom_base_or_egg_dex_id(self, dex_id: str) -> bool:
+        # Works for new egg format too
         return (self.is_custom_base or self.is_egg_sprite) and utils.is_invalid_base_id(dex_id)
 
     def is_invalid_fusion_dex_id(self, fusion_id: str) -> bool:

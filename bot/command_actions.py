@@ -6,7 +6,7 @@ from colormath.color_objects import sRGBColor
 from discord import Interaction, DMChannel
 from discord.embeds import Embed
 
-from bot.core import analysis_sprite
+from bot.core import sprite_analysis
 from bot.spritework.tutorial_mode import PromptButtonsView
 from bot.misc.utils import fancy_print
 
@@ -83,11 +83,11 @@ def get_sorted_color_dict(image) -> frozenset[frozenset[tuple]]:
     all_colors = image.getcolors(ALL_COLOR_LIMIT)
     if not all_colors:  # Color count higher than 256
         raise ValueError
-    useful_colors = analysis_sprite.remove_useless_colors(all_colors)
-    rgb_color_list = analysis_sprite.get_rgb_color_list(useful_colors)
+    useful_colors = sprite_analysis.remove_useless_colors(all_colors)
+    rgb_color_list = sprite_analysis.get_rgb_color_list(useful_colors)
 
-    similar_color_dict = analysis_sprite.get_similar_color_dict(rgb_color_list)
-    sorted_color_dict = analysis_sprite.sort_color_dict(similar_color_dict)
+    similar_color_dict = sprite_analysis.get_similar_color_dict(rgb_color_list)
+    sorted_color_dict = sprite_analysis.sort_color_dict(similar_color_dict)
 
     return sorted_color_dict
 

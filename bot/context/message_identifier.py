@@ -1,10 +1,11 @@
 import re
+
 import discord
 from discord import Message, Thread
 
 from . import setup
 from .bot_context import (id_channel_gallery_pif, id_channel_assets_pif,
-                                     id_spriter_apps_pif, id_spritework)
+                          id_spriter_apps_pif, id_spritework)
 
 ZIGZAG_ID = 1185671488611819560 #1185671488611819560
 YANMEGA_ID = 204255221017214977
@@ -81,4 +82,12 @@ def has_ignored_spritework_tags(thread: Thread) -> bool:
 
 def has_custom_base_in_message(message: Message) -> bool:
     result = re.search(PATTERN_CUSTOM_BASE, message.content)
+    return result is not None
+
+
+def is_intentional_transparency(message: Message) -> bool:
+    content = message.content
+    if not content:
+        return False
+    result = re.search(r'(?i)\b(intentional|intended)\s+transparency\b', content)
     return result is not None

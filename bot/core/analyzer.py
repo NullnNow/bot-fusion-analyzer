@@ -3,20 +3,37 @@ from discord import User, TextChannel, Thread, DMChannel
 
 from bot.spritework.opt_out_options import HideAutoAnalysis
 from bot.misc.enums import AnalysisType
-from . import content_analysis, sprite_analysis
+from . import content_analysis, sprite_analysis, gallery_analysis
 from .analysis import Analysis, generate_file_from_image, get_autogen_file
 
 
 def generate_analysis(
         message: Message,
         specific_attachment: Attachment|None = None,
-        analysis_type: AnalysisType|None = None):
+        analysis_type: AnalysisType|None = None) -> Analysis:
 
     analysis = Analysis(message, specific_attachment, analysis_type)
     content_analysis.main(analysis)
     sprite_analysis.main(analysis)
     analysis.generate_embed()
     return analysis
+
+
+async def generate_gallery_analysis_list(
+        message: Message,
+        analysis_type: AnalysisType|None = None) -> list[Analysis]:
+
+    analysis_list = []
+    for attachment in message.attachments:
+        analysis = Analysis(message, attachment, analysis_type)
+        analysis_list.append(analysis)
+
+    await gallery_analysis.main(analysis_list)
+
+    for analysis in analysis_list:
+        sprite_analysis.main(analysis)
+
+    return analysis_list
 
 
 # Methods to send messages in #fusion-bot

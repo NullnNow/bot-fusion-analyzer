@@ -2,10 +2,10 @@ import json
 import os
 import re
 
-from discord.message import Message
 from discord.asset import Asset
-from discord.user import User, ClientUser
 from discord.member import Member
+from discord.message import Message
+from discord.user import User, ClientUser
 
 from .enums import IdType
 
@@ -13,24 +13,25 @@ MAX_DEX_ID = 572
 AUTOGEN_MAX_ID = 501
 NECROZMA_DEX_ID = 450
 
-
-LETTER_AND_PNG_PATTERN = r'[a-z]{0,1}\.png$'
+DEX_ID = r'[1-9]\d{0,2}'
+LETTER = r'[a-z]{0,1}'
+LETTER_AND_PNG_PATTERN = rf'{LETTER}\.png$'
 
 # 123.456
-NUMBER_PATTERN_FUSION_ID = r'([1-9]\d{0,2})\.([1-9]\d{0,2})'
+NUMBER_PATTERN_FUSION_ID = rf'({DEX_ID})\.({DEX_ID})'
 # 123
-NUMBER_PATTERN_CUSTOM_ID = r'([1-9]\d{0,2})'
+NUMBER_PATTERN_CUSTOM_ID = rf'({DEX_ID})'
 # 123.456.789
-NUMBER_PATTERN_TRIPLE_ID = r'([1-9]\d{0,2})\.([1-9]\d{0,2})\.([1-9]\d{0,2})'
+NUMBER_PATTERN_TRIPLE_ID = rf'({DEX_ID})\.({DEX_ID})\.({DEX_ID})'
 # 123_egg
-NUMBER_PATTERN_EGG_ID = r'([1-9]\d{0,2}_egg)'
+NUMBER_PATTERN_EGG_ID = rf'({DEX_ID}_egg)'
 
 # (123.456a)
-TEXT_PATTERN_FUSION_ID = r'\(([1-9]\d{0,2})\.([1-9]\d{0,2})[a-z]{0,1}\)'
+TEXT_PATTERN_FUSION_ID = rf'\(({DEX_ID})\.({DEX_ID}){LETTER}\)'
 # (123a)
-TEXT_PATTERN_CUSTOM_ID = r'\(([1-9]\d{0,2})[a-z]{0,1}\)'
+TEXT_PATTERN_CUSTOM_ID = rf'\(({DEX_ID}){LETTER}\)'
 # (123.456.789a)
-TEXT_PATTERN_TRIPLE_ID = r'\(([1-9]\d{0,2})\.([1-9]\d{0,2})\.([1-9]\d{0,2})[a-z]{0,1}\)'
+TEXT_PATTERN_TRIPLE_ID = rf'\(({DEX_ID})\.({DEX_ID})\.({DEX_ID}){LETTER}\)'
 
 FILENAME_FUSION_ID = NUMBER_PATTERN_FUSION_ID + LETTER_AND_PNG_PATTERN
 FILENAME_CUSTOM_ID = NUMBER_PATTERN_CUSTOM_ID + LETTER_AND_PNG_PATTERN
@@ -174,14 +175,6 @@ def id_to_name_map():  # Thanks Greystorm for the util and file
     with open(NAMES_JSON_FILE) as f:
         data = json.loads(f.read())
         return {element["id"]: element["display_name"] for element in data["pokemon"]}
-
-
-def is_intentional_transparency(message: Message) -> bool:
-    content = message.content
-    if not content:
-        return False
-    result = re.search(r'(?i)\b(intentional|intended)\s+transparency\b', content)
-    return result is not None
 
 
 BLUE_TEXT    = '\033[94m'

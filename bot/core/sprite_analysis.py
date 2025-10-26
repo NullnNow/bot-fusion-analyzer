@@ -1,5 +1,10 @@
+import numpy
 import requests
+from PIL.Image import Image, new
+from PIL.Image import open as image_open
+from PIL.PyAccess import PyAccess
 
+from bot.context.message_identifier import is_intentional_transparency
 from bot.misc.enums import Severity
 from bot.misc.exceptions import TransparencyException
 from .analysis import Analysis
@@ -9,14 +14,6 @@ from .issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
                      SimilarityAmount, SemiTransparency, CustomBase,
                      SimilarityExcessControversial, SimilarityExcessRefused,
                      MisplacedGrid, EggSprite, NotPng, IntentionalTransparency)
-
-# Pillow
-from PIL.Image import open as image_open
-from PIL.Image import Image, new
-from PIL.PyAccess import PyAccess
-
-# Fuck colormath
-import numpy
 
 
 def patch_asscalar(a):
@@ -199,7 +196,7 @@ class SpriteContext():
         if transparency_amount == 0:
             return
 
-        if utils.is_intentional_transparency(analysis.message):
+        if is_intentional_transparency(analysis.message):
             analysis.issues.add(IntentionalTransparency())
             return
         analysis.transparency_issue = True

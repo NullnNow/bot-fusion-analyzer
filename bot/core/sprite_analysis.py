@@ -427,11 +427,6 @@ def get_color_delta(rgb_a: tuple, rgb_b: tuple):
 
 
 def main(analysis: Analysis):
-    if (analysis.severity == Severity.accepted) or analysis.type.is_reply():
-        handle_valid_sprite(analysis)
-
-
-def handle_valid_sprite(analysis: Analysis):
     context = SpriteContext(analysis)
     context.handle_sprite_format(analysis)
     context.turn_image_into_rgb()

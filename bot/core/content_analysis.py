@@ -27,7 +27,7 @@ class ContentContext:
 
     def handle_only_filename_id(self, analysis: Analysis):
         analysis.fusion_id = self.filename_fusion_id
-        self.handle_dex_verification(analysis, self.filename_fusion_id)
+        handle_dex_verification(analysis, self.filename_fusion_id)
 
     def handle_with_both_ids(self, analysis: Analysis):
         if self.filename_fusion_id != self.content_fusion_id:
@@ -38,38 +38,13 @@ class ContentContext:
                 analysis.fusion_id = self.filename_fusion_id
         else:
             analysis.fusion_id = self.filename_fusion_id
-        self.handle_dex_verification(analysis, self.filename_fusion_id)
+        handle_dex_verification(analysis, self.filename_fusion_id)
 
     def handle_mismatched_ids(self, analysis: Analysis):
         analysis.severity = Severity.refused
         issue = DifferentSprite(self.filename_fusion_id, self.content_fusion_id)
         analysis.issues.add(issue)
-        self.handle_dex_verification(analysis, self.content_fusion_id)
-
-    def handle_dex_verification(self, analysis: Analysis, fusion_id: str):
-        if self.is_invalid_id(fusion_id):
-            analysis.severity = Severity.refused
-            analysis.issues.add(OutOfDex(fusion_id))
-
-        elif self.is_custom_base or self.is_egg_sprite:
-            handle_pokemon_name(analysis, fusion_id, self.is_egg_sprite)
-        elif self.id_type.is_triple_fusion():
-            analysis.issues.add(TripleFusionSprite())
-        else:
-            # Regular fusions
-            handle_pokemon_names(analysis, fusion_id)
-
-    def is_invalid_id(self, dex_id):
-        return (self.is_invalid_fusion_dex_id(dex_id)
-                or self.is_invalid_custom_base_or_egg_dex_id(dex_id))
-
-    def is_invalid_custom_base_or_egg_dex_id(self, dex_id: str) -> bool:
-        # Works for new egg format too
-        return (self.is_custom_base or self.is_egg_sprite) and utils.is_invalid_base_id(dex_id)
-
-    def is_invalid_fusion_dex_id(self, fusion_id: str) -> bool:
-        # Works for triple fusions too
-        return (not (self.is_custom_base or self.is_egg_sprite)) and utils.is_invalid_fusion_id(fusion_id)
+        handle_dex_verification(analysis, self.content_fusion_id)
 
 
 def main(analysis: Analysis):
@@ -111,6 +86,19 @@ def handle_unknown_id(analysis: Analysis):
     analysis.issues.add(UnknownSprite())
     filename = analysis.get_filename()
     analysis.issues.add(FileName(filename))
+
+
+def handle_dex_verification(analysis: Analysis, fusion_id: str):
+    id_type = analysis.fusion_filename.id_type
+    if utils.is_invalid_fusion_id(fusion_id):
+        analysis.severity = Severity.refused
+        analysis.issues.add(OutOfDex(fusion_id))
+    elif id_type.is_custom_base() or id_type.is_egg():
+        handle_pokemon_name(analysis, fusion_id, id_type.is_egg())
+    elif id_type.is_triple_fusion():
+        analysis.issues.add(TripleFusionSprite())
+    else:   # Regular fusions
+        handle_pokemon_names(analysis, fusion_id)
 
 
 def handle_pokemon_names(analysis: Analysis, fusion_id: str):

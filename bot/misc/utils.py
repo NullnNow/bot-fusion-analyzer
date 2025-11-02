@@ -49,7 +49,10 @@ def is_missing_autogen(fusion_id: str):
 
 
 def is_invalid_fusion_id(fusion_id: str):
-    fusion_id_list = fusion_id.split(".")
+    if "." in fusion_id:
+        fusion_id_list = fusion_id.split(".")
+    else:
+        fusion_id_list = [fusion_id]
     for fusion_id in fusion_id_list:
         id_int = int(fusion_id)
         if id_int > MAX_DEX_ID:

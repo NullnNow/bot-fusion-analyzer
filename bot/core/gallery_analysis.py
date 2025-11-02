@@ -1,4 +1,5 @@
 from bot.core.analysis import Analysis
+from bot.core.content_analysis import handle_dex_verification
 from bot.core.filename_analysis import FusionFilename
 from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery
 from bot.misc import utils
@@ -9,10 +10,9 @@ async def main(analysis_list: list[Analysis]):
     """Does some checks from content_analysis with harsher restrictions and some entirely different checks"""
     if (not analysis_list) or (len(analysis_list) == 0):
         return
-    # Move NANI and ping behavior to gallery specific methods in analyzer
     same_id_checks(analysis_list)
     correct_gallery_checks(analysis_list)
-    await pokemon_name_checks()
+    pokemon_name_checks(analysis_list)
     await filename_letter_checks()
 
 
@@ -68,14 +68,14 @@ def ensure_assets_gallery_type(analysis: Analysis):
     analysis.severity = Severity.refused
 
 
-async def pokemon_name_checks():
+def pokemon_name_checks(analysis_list: list[Analysis]):
+    for analysis in analysis_list:
+        handle_dex_verification(analysis, analysis.fusion_filename.dex_ids)
     # If all the filenames match, text checker (beta version that only mentions it in the analysis)
         # Either grab the full names of each Pokémon or a minimal version that allows for misspellings
         # Ensure both names exist in the gallery message. If they don't, have a new easily searchable issue
         # After a trial period it can be determined if the name checker is too strict, how often do misspellings
         # happen, how flexible it is, and if it actually enforces cases where the names don't match
-    # Add the PokemonNames issue here too
-    pass
 
 
 async def filename_letter_checks():

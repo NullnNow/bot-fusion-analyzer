@@ -58,6 +58,8 @@ class Analysis:
         self.issues = Issues()
         self.severity = Severity.accepted
         self.fusion_filename = self.generate_fusion_filename()
+        if self.fusion_filename and self.fusion_filename.dex_ids:
+            self.fusion_id = self.fusion_filename.dex_ids
         if self.has_attachment() or self.has_zigzag_embed():
             self.attachment_url = self.get_attachment_url()
 

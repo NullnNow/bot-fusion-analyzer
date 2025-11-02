@@ -1,6 +1,6 @@
 from bot.core.analysis import Analysis
 from bot.core.filename_analysis import FusionFilename
-from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite
+from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery
 from bot.misc import utils
 from bot.misc.enums import Severity
 
@@ -11,7 +11,7 @@ async def main(analysis_list: list[Analysis]):
         return
     # Move NANI and ping behavior to gallery specific methods in analyzer
     same_id_checks(analysis_list)
-    await correct_gallery_checks()
+    correct_gallery_checks(analysis_list)
     await pokemon_name_checks()
     await filename_letter_checks()
 
@@ -22,6 +22,7 @@ def same_id_checks(analysis_list: list[Analysis]):
     content_ids = utils.extract_fusion_ids_from_content(first_analysis.message, first_filename.id_type)
     if not content_ids:
         first_analysis.issues.add(MissingMessageId())
+        first_analysis.severity = Severity.refused
         return
     if first_filename.dex_ids not in content_ids:
         first_analysis.issues.add(DifferentSprite(first_filename.dex_ids, content_ids[0]))
@@ -37,13 +38,34 @@ def compare_with_first_filename(analysis: Analysis, first_filename: FusionFilena
         return
     if analysis.fusion_filename.dex_ids != first_filename.dex_ids:
         analysis.issues.add(DifferentFilenameIds())
+        analysis.severity = Severity.refused
 
 
-async def correct_gallery_checks():
-    # Correct gallery checks
-        # If it's sprite gallery, ensure it's only a fusion or triple fusion
-        # If it's assets gallery, ensure it's only a base or egg
-    pass
+def correct_gallery_checks(analysis_list: list[Analysis]):
+    first_analysis = analysis_list[0]
+    if first_analysis.fusion_filename.id_type.is_unknown():
+        # By this point, an issue has already been raised if the filename type is unknown
+        return
+    if first_analysis.type.is_sprite_gallery():
+        ensure_sprite_gallery_type(first_analysis)
+    else:
+        ensure_assets_gallery_type(first_analysis)
+
+
+def ensure_sprite_gallery_type(analysis: Analysis):
+    id_type = analysis.fusion_filename.id_type
+    if id_type.is_fusion() or id_type.is_triple_fusion():
+        return
+    analysis.issues.add(IncorrectGallery(id_type, "Sprite Gallery"))
+    analysis.severity = Severity.refused
+
+
+def ensure_assets_gallery_type(analysis: Analysis):
+    id_type = analysis.fusion_filename.id_type
+    if id_type.is_custom_base() or id_type.is_egg():
+        return
+    analysis.issues.add(IncorrectGallery(id_type, "Assets Gallery"))
+    analysis.severity = Severity.refused
 
 
 async def pokemon_name_checks():

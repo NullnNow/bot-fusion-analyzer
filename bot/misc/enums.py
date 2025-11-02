@@ -16,6 +16,7 @@ class Description(str, Enum):
     colour_amount       = "Colors"
     file_name           = "Filename"
     invalid_fusion_id   = "Invalid fusion ID"
+    incorrect_gallery   = "Incorrect gallery"
     not_png             = "Invalid image format"
     invalid_size        = "Invalid size"
     custom              = "custom base"
@@ -77,11 +78,11 @@ class AnalysisType(Enum):
 
 
 class IdType(Enum):
-    fusion      = auto()
-    custom_base = auto()
-    egg         = auto()
-    triple      = auto()
-    unknown     = auto()
+    fusion      = "Fusion"
+    custom_base = "Custom base"
+    egg         = "Egg sprite"
+    triple      = "Triple fusion"
+    unknown     = "Unknown"
 
     def is_fusion(self):
         return self == IdType.fusion

@@ -1,4 +1,4 @@
-from bot.misc.enums import Description, Severity
+from bot.misc.enums import Description, Severity, IdType
 
 
 class Issue:
@@ -113,6 +113,18 @@ class OutOfDex(Issue):
 
     def __str__(self) -> str:
         return f"{self.description.value} ({self.fusion_id})"
+
+
+class IncorrectGallery(Issue):
+    description = Description.incorrect_gallery
+    severity = Severity.refused
+
+    def __init__(self, id_type: IdType, gallery: str):
+        self.id_type = id_type.value
+        self.gallery = gallery
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: {self.id_type} in {self.gallery}"
 
 
 class NotPng(Issue):

@@ -15,15 +15,9 @@ TAG_NON_IF_ID = 1058148169986342963
 TAG_OTHER_ID = 1051367034673434634
 IGNORED_SPRITEWORK_TAGS = [TAG_CUSTOMIZATION_ID, TAG_NON_IF_ID, TAG_OTHER_ID]
 
-PATTERN_CUSTOM_BASE = r'[cC]ustom [bB]ase'
-
 
 def is_sprite_gallery(message: Message) -> bool:
     return message.channel.id == id_channel_gallery_pif
-
-
-def is_assets_custom_base(message: Message) -> bool:
-    return is_assets_gallery(message) and has_custom_base_in_message(message)
 
 
 def is_assets_gallery(message: Message) -> bool:
@@ -78,11 +72,6 @@ def has_ignored_spritework_tags(thread: Thread) -> bool:
         if tag.id in IGNORED_SPRITEWORK_TAGS:
             return True
     return False
-
-
-def has_custom_base_in_message(message: Message) -> bool:
-    result = re.search(PATTERN_CUSTOM_BASE, message.content)
-    return result is not None
 
 
 def is_intentional_transparency(message: Message) -> bool:

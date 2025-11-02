@@ -84,7 +84,6 @@ def main(analysis: Analysis):
 
 def handle_some_content(analysis: Analysis):
     content_context = ContentContext(analysis)
-    analysis.attachment_url = analysis.get_attachment_url()
     if content_context.has_both_fusion_ids():
         content_context.handle_with_both_ids(analysis)
     elif content_context.filename_fusion_id is not None:

@@ -1,20 +1,20 @@
 import asyncio
 
 import discord
-from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, TextChannel, Attachment
-from bot.core.analysis import Analysis
-from bot.core.analyzer import send_full_analysis, generate_analysis, send_analysis
-from bot.core.analyzer import send_extra_embeds
-from bot.context.message_identifier import is_message_from_ignored_bots, has_ignored_spritework_tags
-from bot.spritework.opt_out_options import is_opted_out_user
-from bot.spritework.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
-from bot.misc.utils import fancy_print
-from bot.core.issues import DifferentSprite
-from bot.context.setup import ctx
-from bot.misc.enums import AnalysisType, Severity
-from bot.context.message_identifier import is_assets_gallery
-from bot.spritework.spritework_checker import get_spritework_thread_times
+from discord import Message, Thread, HTTPException, PartialEmoji, DMChannel, TextChannel
 
+from bot.context.message_identifier import is_assets_gallery
+from bot.context.message_identifier import is_message_from_ignored_bots, has_ignored_spritework_tags
+from bot.context.setup import ctx
+from bot.core.analysis import Analysis
+from bot.core.analyzer import send_extra_embeds
+from bot.core.analyzer import send_full_analysis, generate_analysis, send_analysis, generate_gallery_analysis_list
+from bot.core.issues import DifferentSprite
+from bot.misc.enums import AnalysisType, Severity
+from bot.misc.utils import fancy_print, attachment_not_an_image
+from bot.spritework.opt_out_options import is_opted_out_user
+from bot.spritework.spritework_checker import get_spritework_thread_times
+from bot.spritework.tutorial_mode import send_tutorial_mode_prompt, user_is_potential_spriter
 
 ERROR_EMOJI_NAME = "NANI"
 ERROR_EMOJI_ID = f"<:{ERROR_EMOJI_NAME}:770390673664114689>"
@@ -25,29 +25,22 @@ ERROR_EMOJI = PartialEmoji(name=ERROR_EMOJI_NAME).from_str(ERROR_EMOJI_ID)
 # Handler methods
 
 async def handle_sprite_gallery(message: Message):
+    log_event("Assets  >", message)
     await handle_gallery(message, is_assets=False)
 
 
 async def handle_assets_gallery(message: Message):
+    log_event("Gallery >", message)
     await handle_gallery(message, is_assets=True)
 
 
 async def handle_gallery(message: Message, is_assets: bool = False):
     if is_assets:
-        log_event("Assets  >", message)
+        analysis_type = AnalysisType.assets_gallery
     else:
-        log_event("Gallery >", message)
-
-    for specific_attachment in message.attachments:
-        if attachment_not_an_image(specific_attachment):
-            continue
-        if is_assets:
-            analysis_type = AnalysisType.assets_gallery
-        else:
-            analysis_type = AnalysisType.sprite_gallery
-
-        analysis = generate_analysis(message, specific_attachment, analysis_type)
-
+        analysis_type = AnalysisType.sprite_gallery
+    analysis_list = await generate_gallery_analysis_list(message, analysis_type)
+    for analysis in analysis_list:
         if analysis.issues.has_issue(DifferentSprite):
             await handle_misnumbered_in_gallery(message, analysis)
             return
@@ -57,11 +50,8 @@ async def handle_gallery(message: Message, is_assets: bool = False):
                 await message.add_reaction(ERROR_EMOJI)
             except HTTPException:
                 await message.add_reaction("😡")  # Nani failsafe
-        try:
-            await send_full_analysis(analysis, ctx().pif.logs, message.author)
-        except HTTPException:  # Rate limit
-            await asyncio.sleep(300)
-            await send_full_analysis(analysis, ctx().pif.logs, message.author)
+
+        await send_full_analysis(analysis, ctx().pif.logs, message.author)
 
 
 async def handle_zigzag_galpost(message: Message):
@@ -267,9 +257,3 @@ async def notify_if_ai(analysis: Analysis, message: Message, analysis_type: Anal
                                    "the users who submit them, without the use of AI at any stage.\n"
                                    "Welcome to the community!")
         await asyncio.sleep(5)
-
-def attachment_not_an_image(attachment: Attachment) -> bool:
-    attachment_type = attachment.content_type
-    if attachment_type is None:
-        return True
-    return not attachment_type.startswith("image")

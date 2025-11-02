@@ -58,6 +58,8 @@ class Analysis:
         self.issues = Issues()
         self.severity = Severity.accepted
         self.fusion_filename = self.generate_fusion_filename()
+        if self.has_attachment() or self.has_zigzag_embed():
+            self.attachment_url = self.get_attachment_url()
 
     def generate_embed(self):
         self.embed = Embed()

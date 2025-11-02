@@ -2,6 +2,7 @@ import json
 import os
 import re
 
+from discord import Attachment
 from discord.asset import Asset
 from discord.member import Member
 from discord.message import Message
@@ -120,3 +121,10 @@ def fancy_print(decorator: str, author: str, channel: str, text: str):
         text = text[:100]
     print(f"{BLUE_TEXT}{decorator}{COLOR_END} [{author}] "
           f"{MAGENTA_TEXT}{{{channel}}}{COLOR_END} {text}")
+
+
+def attachment_not_an_image(attachment: Attachment) -> bool:
+    attachment_type = attachment.content_type
+    if attachment_type is None:
+        return True
+    return not attachment_type.startswith("image")

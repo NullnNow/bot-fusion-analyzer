@@ -5,6 +5,7 @@ from bot.spritework.opt_out_options import HideAutoAnalysis
 from bot.misc.enums import AnalysisType
 from . import content_analysis, sprite_analysis, gallery_analysis
 from .analysis import Analysis, generate_file_from_image, get_autogen_file
+from ..misc.utils import attachment_not_an_image
 
 
 def generate_analysis(
@@ -28,6 +29,8 @@ async def generate_gallery_analysis_list(
 
     analysis_list = []
     for attachment in message.attachments:
+        if attachment_not_an_image(attachment):
+            continue
         analysis = Analysis(message, attachment, analysis_type)
         analysis_list.append(analysis)
 
@@ -35,6 +38,7 @@ async def generate_gallery_analysis_list(
 
     for analysis in analysis_list:
         sprite_analysis.main(analysis)
+        analysis.generate_embed()
 
     return analysis_list
 

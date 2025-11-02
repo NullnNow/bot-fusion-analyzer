@@ -25,12 +25,12 @@ ERROR_EMOJI = PartialEmoji(name=ERROR_EMOJI_NAME).from_str(ERROR_EMOJI_ID)
 # Handler methods
 
 async def handle_sprite_gallery(message: Message):
-    log_event("Assets  >", message)
+    log_event("Gallery >", message)
     await handle_gallery(message, is_assets=False)
 
 
 async def handle_assets_gallery(message: Message):
-    log_event("Gallery >", message)
+    log_event("Assets  >", message)
     await handle_gallery(message, is_assets=True)
 
 

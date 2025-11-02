@@ -13,7 +13,7 @@ from .issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
                      HalfPixels, InvalidSize, MissingTransparency,
                      SimilarityAmount, SemiTransparency, CustomBase,
                      SimilarityExcessControversial, SimilarityExcessRefused,
-                     MisplacedGrid, EggSprite, NotPng, IntentionalTransparency)
+                     MisplacedGrid, NotPng, IntentionalTransparency)
 
 
 def patch_asscalar(a):
@@ -73,11 +73,7 @@ class SpriteContext():
         self.useful_colors: list = []
         self.similar_color_dict: dict = {}
 
-        # To both cover:
-        # replied custom bases detected in content_analysis
-        # and custom bases from assets gallery
-
-        if analysis.type.is_assets_gallery() or analysis.issues.has_issue(CustomBase):
+        if analysis.fusion_filename.id_type.is_custom_base():
             self.refused_color_lim = CUSTOM_BASE_REFUSED_COLOR_LIMIT
             self.controv_color_lim = CUSTOM_BASE_CONTROV_COLOR_LIMIT
             self.refused_sim_lim = CUSTOM_BASE_REFUSED_SIM_LIMIT
@@ -88,8 +84,7 @@ class SpriteContext():
             self.refused_sim_lim = REFUSED_SIMILARITY_LIMIT
             self.controv_sim_lim = CONTROVERSIAL_SIMILARITY_LIMIT
 
-        self.egg_sprite = analysis.issues.has_issue(EggSprite)
-        if self.egg_sprite:
+        if analysis.fusion_filename.id_type.is_egg():
             self.max_size = EGG_SIZE
             self.step =  EGG_STEP
         else:

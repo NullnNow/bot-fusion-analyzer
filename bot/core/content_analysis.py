@@ -9,7 +9,6 @@ class ContentContext:
     id_type: IdType
     def __init__(self, analysis: Analysis):
 
-        self.fusion_filename = analysis.generate_fusion_filename()
         self.filename_fusion_id = analysis.fusion_filename.dex_ids
         self.id_type = analysis.fusion_filename.id_type
         self.is_custom_base = self.id_type.is_custom_base()

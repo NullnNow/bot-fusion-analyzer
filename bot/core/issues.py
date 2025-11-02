@@ -51,6 +51,16 @@ class MissingSprite(Issue):
     severity = Severity.ignored
 
 
+class MissingMessageId(Issue):
+    description = Description.missing_message_id
+    severity = Severity.refused
+
+
+class DifferentFilenameIds(Issue):
+    description = Description.different_filenames
+    severity = Severity.refused
+
+
 class PokemonNames(Issue):
     severity = Severity.accepted
 

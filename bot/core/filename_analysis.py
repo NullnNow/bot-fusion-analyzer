@@ -65,38 +65,38 @@ def get_fusion_filename(filename: str) -> FusionFilename:
     # Search for fusion pattern
     result = re.match(REGULAR_PATTERN_FUSION_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.fusion)
+        return FusionFilename(filename, IdType.fusion)
 
     result = re.match(SPOILER_PATTERN_FUSION_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.fusion)
+        return FusionFilename(filename, IdType.fusion)
 
     # Search for custom base or egg pattern
     result = re.match(REGULAR_PATTERN_CUSTOM_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.custom_base)
+        return FusionFilename(filename, IdType.custom_base)
 
     result = re.match(SPOILER_PATTERN_CUSTOM_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.custom_base)
+        return FusionFilename(filename, IdType.custom_base)
 
     # Search for triple fusion pattern
     result = re.match(REGULAR_PATTERN_TRIPLE_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.triple)
+        return FusionFilename(filename, IdType.triple)
 
     result = re.match(SPOILER_PATTERN_TRIPLE_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.triple)
+        return FusionFilename(filename, IdType.triple)
 
     # Search for new egg pattern
     result = re.match(REGULAR_PATTERN_EGG_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.egg)
+        return FusionFilename(filename, IdType.egg)
 
     result = re.match(SPOILER_PATTERN_EGG_ID, filename)
     if result is not None:
-        return FusionFilename(result[0], IdType.egg)
+        return FusionFilename(filename, IdType.egg)
     else:
         return FusionFilename("", IdType.unknown)
 

@@ -23,6 +23,9 @@ async def generate_gallery_analysis_list(
         message: Message,
         analysis_type: AnalysisType|None = None) -> list[Analysis]:
 
+    if message.attachments is None:
+        return no_attachment_analysis(message, analysis_type)
+
     analysis_list = []
     for attachment in message.attachments:
         analysis = Analysis(message, attachment, analysis_type)
@@ -34,6 +37,14 @@ async def generate_gallery_analysis_list(
         sprite_analysis.main(analysis)
 
     return analysis_list
+
+
+def no_attachment_analysis(
+        message: Message,
+        analysis_type: AnalysisType|None = None)  -> list[Analysis]:
+    analysis = Analysis(message, None, analysis_type)
+    content_analysis.handle_no_content(analysis)
+    return [analysis]
 
 
 # Methods to send messages in #fusion-bot

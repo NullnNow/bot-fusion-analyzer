@@ -45,10 +45,10 @@ async def main(analysis_list: list[Analysis]):
 
 async def same_id_checks(analysis_list: list[Analysis]):
     first_analysis = analysis_list[0]
-    filename_fusion_id, id_type = first_analysis.extract_fusion_id_from_filename()
+    filename_fusion_id, id_type = first_analysis.generate_fusion_filename()
 
     for analysis in analysis_list:
-        analysis_filename_id, analysis_id_type = analysis.extract_fusion_id_from_filename()
+        analysis_filename_id, analysis_id_type = analysis.generate_fusion_filename()
 
 
 async def correct_gallery_checks():

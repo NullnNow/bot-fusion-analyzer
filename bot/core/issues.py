@@ -1,7 +1,7 @@
 from bot.misc.enums import Description, Severity
 
 
-class Issue():
+class Issue:
     description: Description
     severity: Severity
 
@@ -9,19 +9,16 @@ class Issue():
         return self.description.value
 
 
-class Issues():
+class Issues:
     issue_list: list[Issue]
 
     def __init__(self):
         self.issue_list = []
 
     def __str__(self) -> str:
-        if len(self.issue_list) == 1:
-            return str(self.issue_list[0])
-
         result = ""
         for issue in self.issue_list:
-            result += f"- {issue}\n"
+            result += f"- **{issue}**\n"
         return result
 
     def add(self, issue: Issue):

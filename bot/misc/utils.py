@@ -15,7 +15,6 @@ NECROZMA_DEX_ID = 450
 
 DEX_ID = r'[1-9]\d{0,2}'
 LETTER = r'[a-z]{0,1}'
-LETTER_AND_PNG_PATTERN = rf'{LETTER}\.png$'
 
 # 123.456
 NUMBER_PATTERN_FUSION_ID = rf'({DEX_ID})\.({DEX_ID})'
@@ -33,33 +32,9 @@ TEXT_PATTERN_CUSTOM_ID = rf'\(({DEX_ID}){LETTER}\)'
 # (123.456.789a)
 TEXT_PATTERN_TRIPLE_ID = rf'\(({DEX_ID})\.({DEX_ID})\.({DEX_ID}){LETTER}\)'
 
-FILENAME_FUSION_ID = NUMBER_PATTERN_FUSION_ID + LETTER_AND_PNG_PATTERN
-FILENAME_CUSTOM_ID = NUMBER_PATTERN_CUSTOM_ID + LETTER_AND_PNG_PATTERN
-FILENAME_TRIPLE_ID = NUMBER_PATTERN_TRIPLE_ID + LETTER_AND_PNG_PATTERN
-FILENAME_EGG_ID    = NUMBER_PATTERN_EGG_ID    + LETTER_AND_PNG_PATTERN
-
-REGULAR_PATTERN_FUSION_ID = rf'^{FILENAME_FUSION_ID}'
-SPOILER_PATTERN_FUSION_ID = rf'^SPOILER_{FILENAME_FUSION_ID}'
-
-REGULAR_PATTERN_CUSTOM_ID = rf'^{FILENAME_CUSTOM_ID}'
-SPOILER_PATTERN_CUSTOM_ID = rf'^SPOILER_{FILENAME_CUSTOM_ID}'
-
-REGULAR_PATTERN_TRIPLE_ID = rf'^{FILENAME_TRIPLE_ID}'
-SPOILER_PATTERN_TRIPLE_ID = rf'^SPOILER_{FILENAME_TRIPLE_ID}'
-
-REGULAR_PATTERN_EGG_ID = rf'^{FILENAME_EGG_ID}'
-SPOILER_PATTERN_EGG_ID = rf'^SPOILER_{FILENAME_EGG_ID}'
-
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 NAMES_JSON_FILE = os.path.join(CURRENT_DIR, "..", "..", "data", "PokemonNames.json")
-
-
-def get_filename_from_image_url(url: str):
-    url_parts = url.split(".png")  # Getting everything before the ? and url parameters
-    url_parts = url_parts[0].split("/")  # Grabbing only the filename: 1.1_by_doodledoo
-    dex_id = url_parts[-1].split("_")[0]  # Filtering the credit to keep only the dex id
-    return dex_id + ".png"
 
 
 def is_missing_autogen(fusion_id: str):
@@ -74,8 +49,8 @@ def is_missing_autogen(fusion_id: str):
 
 def is_invalid_fusion_id(fusion_id: str):
     fusion_id_list = fusion_id.split(".")
-    for id in fusion_id_list:
-        id_int = int(id)
+    for fusion_id in fusion_id_list:
+        id_int = int(fusion_id)
         if id_int > MAX_DEX_ID:
             return True
     return False
@@ -88,47 +63,6 @@ def is_invalid_base_id(base_id: str):
 
 def get_display_avatar(user: User | Member | ClientUser) -> Asset:
     return user.display_avatar.with_format("png").with_size(256)
-
-
-def get_fusion_id_from_filename(filename: str) -> (str, IdType):
-
-    # Search for fusion pattern
-    result = re.match(REGULAR_PATTERN_FUSION_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.fusion), IdType.fusion
-
-    result = re.match(SPOILER_PATTERN_FUSION_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.fusion), IdType.fusion
-
-    # Search for custom base or egg pattern
-    result = re.match(REGULAR_PATTERN_CUSTOM_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.custom_base), IdType.custom_base
-
-    result = re.match(SPOILER_PATTERN_CUSTOM_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.custom_base), IdType.custom_base
-
-    # Search for triple fusion pattern
-    result = re.match(REGULAR_PATTERN_TRIPLE_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.triple), IdType.triple
-
-    result = re.match(SPOILER_PATTERN_TRIPLE_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.triple), IdType.triple
-
-    # Search for new egg pattern
-    result = re.match(REGULAR_PATTERN_EGG_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.egg), IdType.egg
-
-    result = re.match(SPOILER_PATTERN_EGG_ID, filename)
-    if result is not None:
-        return get_clean_id_from_result(result[0], IdType.egg), IdType.egg
-    else:
-        return None, IdType.unknown
 
 
 def is_chat_gpt_in_filename(filename: str) -> bool:
@@ -149,14 +83,13 @@ def extract_fusion_ids_from_content(message: Message, id_type: IdType):
 
     iterator = re.finditer(search_pattern, content)
     for result in iterator:
-        clean_id = get_clean_id_from_result(result[0], id_type)
+        clean_id = get_clean_dex_ids(result[0], id_type)
         id_list.append(clean_id)
 
     return id_list
 
 
-def get_clean_id_from_result(text: str, id_type: IdType):
-    fusion_id = None
+def get_clean_dex_ids(text: str, id_type: IdType) -> str | None:
     if id_type.is_custom_base() or id_type.is_egg():
         # With eggs, we also use the base pattern to grab only the number without the "_egg"
         search_pattern = NUMBER_PATTERN_CUSTOM_ID
@@ -166,8 +99,8 @@ def get_clean_id_from_result(text: str, id_type: IdType):
         search_pattern = NUMBER_PATTERN_FUSION_ID
     result = re.search(search_pattern, text)
     if result:
-        fusion_id = result[0]
-    return fusion_id
+        return result.group()
+    return None
 
 
 def id_to_name_map():  # Thanks Greystorm for the util and file

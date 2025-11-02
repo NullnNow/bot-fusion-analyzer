@@ -31,7 +31,7 @@ class Description(str, Enum):
 
 class Severity(Enum):
     accepted        = "Valid"
-    ignored         = "Ignored"
+    ignored         = "Unknown"
     controversial   = "Controversial"
     refused         = "Invalid"
 

@@ -107,6 +107,11 @@ def get_clean_dex_ids(text: str, id_type: IdType) -> str | None:
     return None
 
 
+def find_specific_fusion_id(message: Message, id_to_find: str) -> bool:
+    result = re.search(rf'\({id_to_find}{LETTER}\)', message.content)
+    return result is not None
+
+
 def id_to_name_map():  # Thanks Greystorm for the util and file
     """Returns dictionary mapping id numbers to display names"""
     with open(NAMES_JSON_FILE) as f:

@@ -1,11 +1,14 @@
+import string
 from datetime import datetime
+
+from discord import Message
 
 from bot.context.setup import ctx
 from bot.core.analysis import Analysis
 from bot.core.content_analysis import handle_dex_verification
 from bot.core.filename_analysis import FusionFilename
 from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery, \
-    FileName
+    FileName, WrongLetter
 from bot.misc import utils
 from bot.misc.enums import Severity
 
@@ -91,7 +94,7 @@ def pokemon_name_checks(analysis_list: list[Analysis]):
 
 
 async def filename_letter_checks(analysis_list: list[Analysis]):
-    await search_in_same_month(analysis_list[0])
+    past_instances = await search_in_same_month(analysis_list[0])
     # Month search:
         # Search for previous gallery post within the same month by that user
         # If one matches the current message, ensure that none of its images have the same filename as any of
@@ -102,16 +105,53 @@ async def filename_letter_checks(analysis_list: list[Analysis]):
     # Since the order cannot be guaranteed, have a boolean array of M size that goes from letter N to N+M
     # If any attachment has a letter higher than N + M, put an issue on that analysis
     # At the end, if any letter is unfilled, put an issue in the first analysis
-    pass
+    if len(analysis_list) == 1:
+        await ensure_correct_letter(analysis_list[0], past_instances)
+    else:
+        ensure_filled_letters(analysis_list, past_instances)
 
 
-async def search_in_same_month(analysis: Analysis):
-    author = analysis.message.author.id
+async def search_in_same_month(analysis: Analysis) -> int:
     if analysis.type.is_sprite_gallery():
         gallery_channel = ctx().pif.gallery
     else:
         gallery_channel = ctx().pif.assets
 
-    after_date = datetime(2025, 10, 19)
-    #async for message in gallery_channel.history(after=after_date):
-        #print("one")
+    match_count = 0
+    async for message in gallery_channel.history(after=last_day_of_previous_month()):
+        match_count += same_fusion_and_author_instances(message, analysis.message, analysis.fusion_filename.dex_ids)
+    return match_count
+
+
+def last_day_of_previous_month() -> datetime:
+    #TODO
+    return datetime(2025, 10, 19)
+
+
+def same_fusion_and_author_instances(message: Message, og_message: Message, id_to_find: str) -> int:
+    same_message_id = og_message.id
+    author_id = og_message.author.id
+    if message.author.id != author_id:
+        return 0
+    if message.id == same_message_id:
+        return 0
+    if utils.find_specific_fusion_id(message, id_to_find):
+        return len(message.attachments)
+    return 0
+
+
+async def ensure_correct_letter(analysis: Analysis, past_instances: int):
+    if past_instances == 0:
+        correct_letter = ""
+    elif past_instances > 26:
+        await ctx().doodledoo.debug.send(f"Too many gallery instances: ({analysis.message.jump_url})")
+        return
+    else:
+        correct_letter = string.ascii_lowercase[past_instances - 1]
+    if correct_letter != analysis.fusion_filename.letter:
+        analysis.issues.add(WrongLetter(correct_letter))
+        analysis.severity = Severity.refused
+
+
+def ensure_filled_letters(analysis_list: list[Analysis], past_instances: int):
+    pass    #TODO

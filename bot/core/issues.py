@@ -127,6 +127,16 @@ class IncorrectGallery(Issue):
         return f"{self.description.value}: {self.id_type} in {self.gallery}"
 
 
+class WrongLetter(Issue):
+    description = Description.wrong_letter
+
+    def __init__(self, correct_letter: str):
+        self.correct_letter = correct_letter
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: should be {self.correct_letter}"
+
+
 class NotPng(Issue):
     description = Description.not_png
     severity = Severity.refused

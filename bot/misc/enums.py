@@ -17,6 +17,7 @@ class Description(str, Enum):
     file_name           = "Filename"
     invalid_fusion_id   = "Invalid fusion ID"
     incorrect_gallery   = "Incorrect gallery"
+    wrong_letter        = "Wrong filename alt letter"
     not_png             = "Invalid image format"
     invalid_size        = "Invalid size"
     custom              = "custom base"

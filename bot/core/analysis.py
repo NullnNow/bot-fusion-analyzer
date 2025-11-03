@@ -11,7 +11,7 @@ from discord.message import Attachment, Message
 from bot.core.filename_analysis import get_filename_from_zigzag_image_url, get_fusion_filename, FusionFilename
 import bot.misc.utils as utils
 from bot.misc.enums import DiscordColour, Severity, AnalysisType, IdType
-from .issues import Issues, PokemonNames
+from .issues import Issues, PokemonNames, Issue
 
 DICT_SEVERITY_COLOUR = {
     Severity.accepted : DiscordColour.green,
@@ -175,6 +175,26 @@ class Analysis:
         elif fusion_filename.id_type.is_unknown():
             self.ai_suspicion += 4
         return fusion_filename
+
+    def add_issue(self, issue: Issue):
+        self.issues.add(issue)
+        if issue.severity is Severity.refused:
+            self.severity_refused()
+        elif issue.severity is Severity.controversial:
+            self.severity_controversial()
+        elif issue.severity is Severity.ignored:
+            self.severity_ignored()
+
+    def severity_ignored(self):
+        if self.severity is Severity.accepted:
+            self.severity = Severity.ignored
+
+    def severity_controversial(self):
+        if self.severity is not Severity.refused:
+            self.severity = Severity.controversial
+
+    def severity_refused(self):
+        self.severity = Severity.refused
 
 
 def get_autogen_file(fusion_id: str) -> File|None:

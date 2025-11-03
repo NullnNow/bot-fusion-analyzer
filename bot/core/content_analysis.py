@@ -1,5 +1,5 @@
 import bot.misc.utils as utils
-from bot.misc.enums import Severity, IdType
+from bot.misc.enums import IdType
 from .analysis import Analysis
 from .issues import (CustomBase, DifferentSprite, EggSprite, UnknownSprite, MissingFilename,
                      MissingSprite, OutOfDex, FileName, PokemonNames, TripleFusionSprite)
@@ -41,9 +41,8 @@ class ContentContext:
         handle_dex_verification(analysis, self.filename_fusion_id)
 
     def handle_mismatched_ids(self, analysis: Analysis):
-        analysis.severity = Severity.refused
         issue = DifferentSprite(self.filename_fusion_id, self.content_fusion_id)
-        analysis.issues.add(issue)
+        analysis.add_issue(issue)
         handle_dex_verification(analysis, self.content_fusion_id)
 
 
@@ -70,33 +69,29 @@ def handle_some_content(analysis: Analysis):
 
 
 def handle_no_filename_id(analysis: Analysis):
-    analysis.severity = Severity.refused
-    analysis.issues.add(MissingFilename())
+    analysis.add_issue(MissingFilename())
     filename = analysis.get_filename()
-    analysis.issues.add(FileName(filename))
+    analysis.add_issue(FileName(filename))
 
 
 def handle_no_content(analysis: Analysis):
-    analysis.severity = Severity.ignored
-    analysis.issues.add(MissingSprite())
+    analysis.add_issue(MissingSprite())
 
 
 def handle_unknown_id(analysis: Analysis):
-    analysis.severity = Severity.ignored
-    analysis.issues.add(UnknownSprite())
+    analysis.add_issue(UnknownSprite())
     filename = analysis.get_filename()
-    analysis.issues.add(FileName(filename))
+    analysis.add_issue(FileName(filename))
 
 
 def handle_dex_verification(analysis: Analysis, fusion_id: str):
     id_type = analysis.fusion_filename.id_type
     if utils.is_invalid_fusion_id(fusion_id):
-        analysis.severity = Severity.refused
-        analysis.issues.add(OutOfDex(fusion_id))
+        analysis.add_issue(OutOfDex(fusion_id))
     elif id_type.is_custom_base() or id_type.is_egg():
         handle_pokemon_name(analysis, fusion_id, id_type.is_egg())
     elif id_type.is_triple_fusion():
-        analysis.issues.add(TripleFusionSprite())
+        analysis.add_issue(TripleFusionSprite())
     else:   # Regular fusions
         handle_pokemon_names(analysis, fusion_id)
 
@@ -106,14 +101,14 @@ def handle_pokemon_names(analysis: Analysis, fusion_id: str):
     name_map = utils.id_to_name_map()
     head_name = name_map.get(head)
     body_name = name_map.get(body)
-    analysis.issues.add(PokemonNames(head_name, body_name))
+    analysis.add_issue(PokemonNames(head_name, body_name))
 
 
 def handle_pokemon_name(analysis: Analysis, base_id: str, egg_sprite: bool = False):
     name_map = utils.id_to_name_map()
     pokemon_name = name_map.get(base_id)
     if egg_sprite:
-        analysis.issues.add(EggSprite(pokemon_name))
+        analysis.add_issue(EggSprite(pokemon_name))
     else:
-        analysis.issues.add(CustomBase(pokemon_name))
+        analysis.add_issue(CustomBase(pokemon_name))
 

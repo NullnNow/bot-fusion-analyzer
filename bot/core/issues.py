@@ -129,9 +129,13 @@ class IncorrectGallery(Issue):
 
 class WrongLetter(Issue):
     description = Description.wrong_letter
+    severity = Severity.refused
 
     def __init__(self, correct_letter: str):
-        self.correct_letter = correct_letter
+        if correct_letter == "":
+            self.correct_letter = "empty"
+        else:
+            self.correct_letter = correct_letter
 
     def __str__(self) -> str:
         return f"{self.description.value}: should be {self.correct_letter}"
@@ -216,7 +220,7 @@ class ColorOverExcess(Issue):
 
 class SimilarityExcessControversial(Issue):
     description = Description.high_similarity
-    severity = Severity.refused
+    severity = Severity.controversial
 
     def __init__(self, maximum: int) -> None:
         self.maximum = maximum
@@ -227,7 +231,7 @@ class SimilarityExcessControversial(Issue):
 
 class SimilarityExcessRefused(Issue):
     description = Description.refused_similarity
-    severity = Severity.controversial
+    severity = Severity.refused
 
     def __init__(self, maximum: int) -> None:
         self.maximum = maximum
@@ -269,7 +273,7 @@ class IntentionalTransparency(Issue):
 
 class SimilarityAmount(Issue):
     description = Description.similarity_amount
-    severity = Severity.controversial
+    severity = Severity.accepted
 
     def __init__(self, amount: int) -> None:
         self.amount = amount
@@ -285,4 +289,4 @@ class HalfPixels(Issue):
 
 class MisplacedGrid(Issue):
     description = Description.misplaced_grid
-    severity = Severity.controversial
+    severity = Severity.accepted

@@ -10,7 +10,6 @@ from bot.core.filename_analysis import FusionFilename
 from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery, \
     FileName, WrongLetter
 from bot.misc import utils
-from bot.misc.enums import Severity
 
 
 async def main(analysis_list: list[Analysis]):
@@ -33,21 +32,19 @@ def same_id_checks(analysis_list: list[Analysis]):
         return
     content_ids = utils.extract_fusion_ids_from_content(first_analysis.message, first_filename.id_type)
     if not content_ids:
-        first_analysis.issues.add(MissingMessageId())
-        first_analysis.severity = Severity.refused
+        first_analysis.add_issue(MissingMessageId())
         return
     if first_filename.dex_ids not in content_ids:
-        first_analysis.issues.add(DifferentSprite(first_filename.dex_ids, content_ids[0]))
+        first_analysis.add_issue(DifferentSprite(first_filename.dex_ids, content_ids[0]))
         return
     for analysis in analysis_list:
         compare_with_first_filename(analysis, first_filename)
 
 
 def unknown_sprite(analysis: Analysis):
-    analysis.issues.add(UnknownSprite())
+    analysis.add_issue(UnknownSprite())
     filename = analysis.get_filename()
-    analysis.issues.add(FileName(filename))
-    analysis.severity = Severity.refused
+    analysis.add_issue(FileName(filename))
 
 
 def compare_with_first_filename(analysis: Analysis, first_filename: FusionFilename):
@@ -55,8 +52,7 @@ def compare_with_first_filename(analysis: Analysis, first_filename: FusionFilena
         unknown_sprite(analysis)
         return
     if analysis.fusion_filename.dex_ids != first_filename.dex_ids:
-        analysis.issues.add(DifferentFilenameIds())
-        analysis.severity = Severity.refused
+        analysis.add_issue(DifferentFilenameIds())
 
 
 def correct_gallery_checks(analysis_list: list[Analysis]):
@@ -71,16 +67,14 @@ def ensure_sprite_gallery_type(analysis: Analysis):
     id_type = analysis.fusion_filename.id_type
     if id_type.is_fusion() or id_type.is_triple_fusion():
         return
-    analysis.issues.add(IncorrectGallery(id_type, "Sprite Gallery"))
-    analysis.severity = Severity.refused
+    analysis.add_issue(IncorrectGallery(id_type, "Sprite Gallery"))
 
 
 def ensure_assets_gallery_type(analysis: Analysis):
     id_type = analysis.fusion_filename.id_type
     if id_type.is_custom_base() or id_type.is_egg():
         return
-    analysis.issues.add(IncorrectGallery(id_type, "Assets Gallery"))
-    analysis.severity = Severity.refused
+    analysis.add_issue(IncorrectGallery(id_type, "Assets Gallery"))
 
 
 def pokemon_name_checks(analysis_list: list[Analysis]):
@@ -149,8 +143,7 @@ async def ensure_correct_letter(analysis: Analysis, past_instances: int):
     else:
         correct_letter = string.ascii_lowercase[past_instances - 1]
     if correct_letter != analysis.fusion_filename.letter:
-        analysis.issues.add(WrongLetter(correct_letter))
-        analysis.severity = Severity.refused
+        analysis.add_issue(WrongLetter(correct_letter))
 
 
 def ensure_filled_letters(analysis_list: list[Analysis], past_instances: int):

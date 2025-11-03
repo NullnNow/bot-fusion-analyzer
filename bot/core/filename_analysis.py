@@ -29,15 +29,14 @@ class FusionFilename:
     letter: str|None
 
     def __init__(self,  filename: str, id_type: IdType):
-        self.full_filename = filename
-        clean_filename = remove_spoiler(filename)
+        self.full_filename = remove_spoiler(filename)
         self.id_type = id_type
         if self.id_type.is_unknown():
             self.dex_ids = None
             self.letter = None
             return
-        self.dex_ids = utils.get_clean_dex_ids(clean_filename, id_type)
-        self.letter = grab_letter(clean_filename)
+        self.dex_ids = utils.get_clean_dex_ids(self.full_filename, id_type)
+        self.letter = grab_letter(self.full_filename, self.dex_ids)
 
     def id_and_letter(self) -> str|None:
         if self.id_type.is_unknown() or self.full_filename is None:
@@ -51,13 +50,12 @@ def remove_spoiler(filename: str) -> str|None:
     return filename.replace("SPOILER_", "")
 
 
-def grab_letter(filename: str) -> str|None:
+def grab_letter(filename: str, dex_ids: str) -> str|None:
     # If we reach this point, the filename is standard and any letter will only be the correct one
-    no_egg = filename.replace("_egg", "")
-    letter_result = re.match(utils.LETTER, no_egg)
-    if letter_result:
-        return letter_result.group()
-    return None
+    remove_rest = (filename.replace("_egg", "")
+                   .replace(".png", "")
+                   .replace(dex_ids, ""))
+    return remove_rest
 
 
 def get_fusion_filename(filename: str) -> FusionFilename:

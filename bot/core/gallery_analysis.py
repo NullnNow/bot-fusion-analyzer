@@ -1,7 +1,11 @@
+from datetime import datetime
+
+from bot.context.setup import ctx
 from bot.core.analysis import Analysis
 from bot.core.content_analysis import handle_dex_verification
 from bot.core.filename_analysis import FusionFilename
-from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery
+from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery, \
+    FileName
 from bot.misc import utils
 from bot.misc.enums import Severity
 
@@ -11,14 +15,19 @@ async def main(analysis_list: list[Analysis]):
     if (not analysis_list) or (len(analysis_list) == 0):
         return
     same_id_checks(analysis_list)
+    if analysis_list[0].issues.has_issue(UnknownSprite):
+        return
     correct_gallery_checks(analysis_list)
     pokemon_name_checks(analysis_list)
-    await filename_letter_checks()
+    await filename_letter_checks(analysis_list)
 
 
 def same_id_checks(analysis_list: list[Analysis]):
     first_analysis = analysis_list[0]
     first_filename = first_analysis.fusion_filename
+    if first_filename.id_type.is_unknown():
+        unknown_sprite(first_analysis)
+        return
     content_ids = utils.extract_fusion_ids_from_content(first_analysis.message, first_filename.id_type)
     if not content_ids:
         first_analysis.issues.add(MissingMessageId())
@@ -31,10 +40,16 @@ def same_id_checks(analysis_list: list[Analysis]):
         compare_with_first_filename(analysis, first_filename)
 
 
+def unknown_sprite(analysis: Analysis):
+    analysis.issues.add(UnknownSprite())
+    filename = analysis.get_filename()
+    analysis.issues.add(FileName(filename))
+    analysis.severity = Severity.refused
+
+
 def compare_with_first_filename(analysis: Analysis, first_filename: FusionFilename):
     if analysis.fusion_filename.id_type.is_unknown():
-        analysis.issues.add(UnknownSprite())
-        analysis.severity = Severity.ignored
+        unknown_sprite(analysis)
         return
     if analysis.fusion_filename.dex_ids != first_filename.dex_ids:
         analysis.issues.add(DifferentFilenameIds())
@@ -43,9 +58,6 @@ def compare_with_first_filename(analysis: Analysis, first_filename: FusionFilena
 
 def correct_gallery_checks(analysis_list: list[Analysis]):
     first_analysis = analysis_list[0]
-    if first_analysis.fusion_filename.id_type.is_unknown():
-        # By this point, an issue has already been raised if the filename type is unknown
-        return
     if first_analysis.type.is_sprite_gallery():
         ensure_sprite_gallery_type(first_analysis)
     else:
@@ -78,7 +90,8 @@ def pokemon_name_checks(analysis_list: list[Analysis]):
         # happen, how flexible it is, and if it actually enforces cases where the names don't match
 
 
-async def filename_letter_checks():
+async def filename_letter_checks(analysis_list: list[Analysis]):
+    await search_in_same_month(analysis_list[0])
     # Month search:
         # Search for previous gallery post within the same month by that user
         # If one matches the current message, ensure that none of its images have the same filename as any of
@@ -90,3 +103,15 @@ async def filename_letter_checks():
     # If any attachment has a letter higher than N + M, put an issue on that analysis
     # At the end, if any letter is unfilled, put an issue in the first analysis
     pass
+
+
+async def search_in_same_month(analysis: Analysis):
+    author = analysis.message.author.id
+    if analysis.type.is_sprite_gallery():
+        gallery_channel = ctx().pif.gallery
+    else:
+        gallery_channel = ctx().pif.assets
+
+    after_date = datetime(2025, 10, 19)
+    #async for message in gallery_channel.history(after=after_date):
+        #print("one")

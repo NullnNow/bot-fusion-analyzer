@@ -6,6 +6,8 @@ import discord
 class Description(str, Enum):
     missing_file        = "Missing sprite"
     missing_filename    = "Missing filename"
+    missing_message_id  = "Missing fusion ID in gallery message"
+    different_filenames = "Different fusions in the same gallery message"
     different_fusion_id = "Different IDs"
     colour_excess       = "Color excess"
     semi_transparent    = "Semi transparent pixels"
@@ -14,6 +16,10 @@ class Description(str, Enum):
     colour_amount       = "Colors"
     file_name           = "Filename"
     invalid_fusion_id   = "Invalid fusion ID"
+    incorrect_gallery   = "Incorrect gallery"
+    name_not_found      = "Not found in gallery message"
+    wrong_letter        = "Wrong filename alt letter"
+    missing_letters     = "Missing alt letters in message"
     not_png             = "Invalid image format"
     invalid_size        = "Invalid size"
     custom              = "custom base"
@@ -31,7 +37,7 @@ class Description(str, Enum):
 
 class Severity(Enum):
     accepted        = "Valid"
-    ignored         = "Ignored"
+    ignored         = "Unknown"
     controversial   = "Controversial"
     refused         = "Invalid"
 
@@ -75,11 +81,11 @@ class AnalysisType(Enum):
 
 
 class IdType(Enum):
-    fusion      = auto()
-    custom_base = auto()
-    egg         = auto()
-    triple      = auto()
-    unknown     = auto()
+    fusion      = "Fusion"
+    custom_base = "Custom base"
+    egg         = "Egg sprite"
+    triple      = "Triple fusion"
+    unknown     = "Unknown"
 
     def is_fusion(self):
         return self == IdType.fusion

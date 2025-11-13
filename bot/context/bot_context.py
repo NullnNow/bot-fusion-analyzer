@@ -1,6 +1,6 @@
 from discord import Client, Guild, TextChannel
 
-from bot.models import ServerContext, GlobalContext
+from .models import ServerContext, GlobalContext
 
 # Doodledoo test server
 id_server_doodledoo          = 446241769462562827
@@ -52,6 +52,8 @@ class BotContext:
 
         doodledoo_context = ServerContext(
             server    = server_doodledoo,
+            sprite    = channel_log_doodledoo,
+            assets    = channel_log_doodledoo,
             logs      = channel_log_doodledoo,
             debug     = channel_debug_doodledoo,
             zigzagoon = channel_log_doodledoo,
@@ -59,6 +61,8 @@ class BotContext:
         )
 
         server_pif        = get_server_from_id(client, id_server_pif)
+        sprite_gallery    = get_channel_from_id(server_pif, id_channel_gallery_pif)
+        assets_gallery    = get_channel_from_id(server_pif, id_channel_assets_pif)
         channel_log_pif   = get_channel_from_id(server_pif, id_channel_logs_pif)
         channel_debug_pif = get_channel_from_id(server_pif, id_channel_debug_pif)
         channel_zigzagoon = get_channel_from_id(server_pif, id_channel_zigzagoon)
@@ -66,6 +70,8 @@ class BotContext:
 
         pif_context = ServerContext(
             server    = server_pif,
+            sprite    = sprite_gallery,
+            assets    = assets_gallery,
             logs      = channel_log_pif,
             debug     = channel_debug_pif,
             zigzagoon = channel_zigzagoon,

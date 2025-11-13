@@ -1,23 +1,54 @@
-import analysis_content as analysis_content
-import analysis_sprite as analysis_sprite
-from analysis import Analysis, generate_file_from_image, get_autogen_file
 from discord.message import Message, Attachment
 from discord import User, TextChannel, Thread, DMChannel
 
-from bot.opt_out_options import HideAutoAnalysis
-from enums import AnalysisType
+from bot.spritework.opt_out_options import HideAutoAnalysis
+from bot.misc.enums import AnalysisType
+from . import content_analysis, sprite_analysis, gallery_analysis
+from .analysis import Analysis, generate_file_from_image, get_autogen_file
+from ..misc.utils import attachment_not_an_image
 
 
 def generate_analysis(
         message: Message,
         specific_attachment: Attachment|None = None,
-        analysis_type: AnalysisType|None = None):
+        analysis_type: AnalysisType|None = None) -> Analysis:
 
     analysis = Analysis(message, specific_attachment, analysis_type)
-    analysis_content.main(analysis)
-    analysis_sprite.main(analysis)
+    content_analysis.main(analysis)
+    sprite_analysis.main(analysis)
     analysis.generate_embed()
     return analysis
+
+
+async def generate_gallery_analysis_list(
+        message: Message,
+        analysis_type: AnalysisType|None = None) -> list[Analysis]:
+
+    if message.attachments is None:
+        return no_attachment_analysis(message, analysis_type)
+
+    analysis_list = []
+    for attachment in message.attachments:
+        if attachment_not_an_image(attachment):
+            continue
+        analysis = Analysis(message, attachment, analysis_type)
+        analysis_list.append(analysis)
+
+    await gallery_analysis.main(analysis_list)
+
+    for analysis in analysis_list:
+        sprite_analysis.main(analysis)
+        analysis.generate_embed()
+
+    return analysis_list
+
+
+def no_attachment_analysis(
+        message: Message,
+        analysis_type: AnalysisType|None = None)  -> list[Analysis]:
+    analysis = Analysis(message, None, analysis_type)
+    content_analysis.handle_no_content(analysis)
+    return [analysis]
 
 
 # Methods to send messages in #fusion-bot

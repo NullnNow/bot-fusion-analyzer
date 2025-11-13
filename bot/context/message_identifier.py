@@ -1,11 +1,11 @@
 import re
+
 import discord
 from discord import Message, Thread
 
-from bot import setup
-from bot.bot_context import (id_channel_gallery_pif, id_channel_assets_pif,
-                             id_spriter_apps_pif, id_spritework)
-from bot.setup import get_bot_id
+from . import setup
+from .bot_context import (id_channel_gallery_pif, id_channel_assets_pif,
+                          id_spriter_apps_pif, id_spritework)
 
 ZIGZAG_ID = 1185671488611819560 #1185671488611819560
 YANMEGA_ID = 204255221017214977
@@ -15,15 +15,9 @@ TAG_NON_IF_ID = 1058148169986342963
 TAG_OTHER_ID = 1051367034673434634
 IGNORED_SPRITEWORK_TAGS = [TAG_CUSTOMIZATION_ID, TAG_NON_IF_ID, TAG_OTHER_ID]
 
-PATTERN_CUSTOM_BASE = r'[cC]ustom [bB]ase'
-
 
 def is_sprite_gallery(message: Message) -> bool:
     return message.channel.id == id_channel_gallery_pif
-
-
-def is_assets_custom_base(message: Message) -> bool:
-    return is_assets_gallery(message) and has_custom_base_in_message(message)
 
 
 def is_assets_gallery(message: Message) -> bool:
@@ -53,7 +47,7 @@ def is_message_from_ignored_bots(message: Message) -> bool:
 
 def is_mentioning_bot(message: Message) -> bool:
     result = False
-    fusion_bot_id = get_bot_id()
+    fusion_bot_id = setup.get_bot_id()
     for user in message.mentions:
         if fusion_bot_id == user.id:
             result = True
@@ -80,6 +74,9 @@ def has_ignored_spritework_tags(thread: Thread) -> bool:
     return False
 
 
-def has_custom_base_in_message(message: Message) -> bool:
-    result = re.search(PATTERN_CUSTOM_BASE, message.content)
+def is_intentional_transparency(message: Message) -> bool:
+    content = message.content
+    if not content:
+        return False
+    result = re.search(r'(?i)\b(intentional|intended)\s+transparency\b', content)
     return result is not None

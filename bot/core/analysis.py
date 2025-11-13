@@ -8,9 +8,10 @@ from discord.embeds import Embed
 from discord.file import File
 from discord.message import Attachment, Message
 
-import utils
-from enums import DiscordColour, Severity, AnalysisType, IdType
-from issues import Issues, PokemonNames
+from bot.core.filename_analysis import get_filename_from_zigzag_image_url, get_fusion_filename, FusionFilename
+import bot.misc.utils as utils
+from bot.misc.enums import DiscordColour, Severity, AnalysisType, IdType
+from .issues import Issues, PokemonNames, Issue
 
 DICT_SEVERITY_COLOUR = {
     Severity.accepted : DiscordColour.green,
@@ -29,6 +30,7 @@ class Analysis:
     severity: Severity
     embed: Embed
     fusion_id: str = "DEFAULT_VALUE"
+    fusion_filename: FusionFilename|None
 
     autogen_available: bool = False
     attachment_url: str|None = None
@@ -52,9 +54,14 @@ class Analysis:
                  analysis_type:AnalysisType|None) -> None:
         self.message = message
         self.specific_attachment = specific_attachment
+        self.type = analysis_type
         self.issues = Issues()
         self.severity = Severity.accepted
-        self.type = analysis_type
+        self.fusion_filename = self.generate_fusion_filename()
+        if self.fusion_filename and self.fusion_filename.dex_ids:
+            self.fusion_id = self.fusion_filename.dex_ids
+        if self.has_attachment() or self.has_zigzag_embed():
+            self.attachment_url = self.get_attachment_url()
 
     def generate_embed(self):
         self.embed = Embed()
@@ -74,20 +81,21 @@ class Analysis:
             self.half_pixels_embed = get_bonus_embed(DiscordColour.red.value, "Half pixel location:")
 
     def apply_title(self):
-        if self.fusion_id and (self.fusion_id != "DEFAULT_VALUE"):
-            title_text = f"__{self.severity.value}: {self.fusion_id}__\n{str(self.issues)}"
+        if self.fusion_filename:
+            id_and_letter = self.fusion_filename.id_and_letter()
         else:
-            title_text = f"__{self.severity.value}:__\n{str(self.issues)}"
-        if len(title_text) >= 256:   # In case it's too long for the title
-            self.embed.description = title_text + self.embed.description
+            id_and_letter = None
+
+        if id_and_letter:
+            self.embed.title = f"__{self.severity.value}: {id_and_letter}__"
         else:
-            self.embed.title = title_text
+            self.embed.title = f"__{self.severity.value}:__"
 
     def apply_colour(self):
         self.embed.colour = DICT_SEVERITY_COLOUR.get(self.severity, DiscordColour.gray).value
 
     def apply_description(self):
-        self.embed.description = f"[Link to message]({self.message.jump_url})"
+        self.embed.description = f"{str(self.issues)}\n[Link to message]({self.message.jump_url})"
 
     def apply_author(self):
         author_avatar = utils.get_display_avatar(self.message.author)
@@ -133,7 +141,7 @@ class Analysis:
     def get_filename(self):
         if self.type.is_zigzag_galpost():
             image_url = self.get_attachment_url_from_embed()
-            return utils.get_filename_from_image_url(image_url)
+            return get_filename_from_zigzag_image_url(image_url)
         if self.specific_attachment is None:
             return self.message.attachments[0].filename
         return self.specific_attachment.filename
@@ -157,34 +165,51 @@ class Analysis:
             return None
         return embed.image.url
 
-    def extract_fusion_id_from_filename(self) -> (str, IdType):
-        fusion_id = None
-        id_type = IdType.unknown
-        if self.has_attachment() or self.type.is_zigzag_galpost():
-            filename = self.get_filename()
-            fusion_id, id_type = utils.get_fusion_id_from_filename(filename)
-            if utils.is_chat_gpt_in_filename(filename):
-                self.ai_suspicion += 20
-            elif id_type.is_unknown():
-                self.ai_suspicion += 4
-        return fusion_id, id_type
+    def generate_fusion_filename(self) -> FusionFilename:
+        if not (self.has_attachment() or self.type.is_zigzag_galpost()):
+            return FusionFilename("", IdType.unknown)
+        filename = self.get_filename()
+        fusion_filename = get_fusion_filename(filename)
+        if utils.is_chat_gpt_in_filename(filename):
+            self.ai_suspicion += 20
+        elif fusion_filename.id_type.is_unknown():
+            self.ai_suspicion += 4
+        return fusion_filename
+
+    def add_issue(self, issue: Issue):
+        self.issues.add(issue)
+        if issue.severity is Severity.refused:
+            self.severity_refused()
+        elif issue.severity is Severity.controversial:
+            self.severity_controversial()
+        elif issue.severity is Severity.ignored:
+            self.severity_ignored()
+
+    def severity_ignored(self):
+        if self.severity is Severity.accepted:
+            self.severity = Severity.ignored
+
+    def severity_controversial(self):
+        if self.severity is not Severity.refused:
+            self.severity = Severity.controversial
+
+    def severity_refused(self):
+        self.severity = Severity.refused
 
 
 def get_autogen_file(fusion_id: str) -> File|None:
     ids_list = fusion_id.split(".")
-    if len(ids_list) == 2:
-        head_id = ids_list[0]
-        body_id = ids_list[1]
-    else:
+    if len(ids_list) != 2:
         return None
-
+    head_id = ids_list[0]
+    body_id = ids_list[1]
     return cut_from_spritesheet(head_id, body_id)
 
 
 def cut_from_spritesheet(head_id: str, body_id: str) -> File:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     filename = head_id + ".png"
-    head_sheet_dir = os.path.join(current_dir, "..", "data", "spritesheets_autogen", filename)
+    head_sheet_dir = os.path.join(current_dir, "..", "..", "data", "spritesheets_autogen", filename)
     spritesheet = image_open(head_sheet_dir)
 
     # ------------------- SPRITESHEET FORMAT -------------------

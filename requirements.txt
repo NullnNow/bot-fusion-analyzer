@@ -13,3 +13,4 @@ numpy==1.25.1
 yarl==1.19.0
 Pillow==10.3.0
 requests==2.32.0
+tzdata==2025.2

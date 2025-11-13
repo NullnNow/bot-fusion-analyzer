@@ -2,14 +2,14 @@ import os
 from typing import Any
 
 import discord
-from discord import Member, User, Thread, TextChannel, DMChannel, SelectOption, File, Message, PartialMessage, \
-    HTTPException, Forbidden, NotFound
+from discord import (Member, User, Thread, TextChannel, DMChannel, SelectOption,
+                     File, Message, HTTPException, Forbidden, NotFound)
 from discord.ui import View, Button, Select, Item
 from discord import ButtonStyle, Interaction
 
-from bot.setup import ctx
-from bot.tutorial_sections import sections
-from bot.utils import fancy_print
+from bot.context.setup import ctx
+from bot.misc.utils import fancy_print
+from .tutorial_sections import sections
 
 SPRITER_ROLE_ID = 392803830900850688
 APPLICANT_ID    = 1136806607469150380
@@ -23,7 +23,7 @@ NON_TUTORIAL_ROLES = [SPRITER_ROLE_ID, MANAGER_ROLE_ID, WATCHOG_ROLE_ID, MOD_ROL
                       UNOWN_ROLE_ID, NO_GALPOST_ID, NO_HARVEST_ID, APPLICANT_ID]
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-IMAGES_PATH = os.path.join(CURRENT_DIR, "..", "resources")
+IMAGES_PATH = os.path.join(CURRENT_DIR, "..", "..", "resources")
 FINISH_TUTORIAL = "Thanks for using Tutorial Mode!\nIf you'd like to use it again, use the /help command."
 TUTORIAL_LOG_DECORATOR = "TutMode >"
 

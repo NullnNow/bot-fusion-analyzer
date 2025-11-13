@@ -729,7 +729,7 @@
     {
         "id": "122",
         "name": "mrmime",
-        "typos": ["mistermime"],
+        "typos": ["mistermime", "mr mime"],
         "display_name": "Mr. Mime"
     },
     {
@@ -2565,13 +2565,13 @@
     {
         "id": "428",
         "name": "glalie",
-        "typos": ["glaile"],
+        "typos": ["glaile", "glale"],
         "display_name": "Glalie"
     },
     {
         "id": "429",
         "name": "froslass",
-        "typos": ["frostlass"],
+        "typos": ["frostlass", "froslas"],
         "display_name": "Froslass"
     },
     {
@@ -2781,25 +2781,25 @@
     {
         "id": "464",
         "name": "lycanrocmidday",
-        "typos": ["lycanrockmidday", "lycanrocmiday", "lycandockmiday" ],
+        "typos": ["lycanrock midday", "lycanroc miday", "lycandock miday", "midday"],
         "display_name": "Lycanroc Midday"
     },
     {
         "id": "465",
         "name": "lycanrocmidnight",
-        "typos": ["lycanrockmidnight"],
+        "typos": ["lycanrock midnight", "midnight"],
         "display_name": "Lycanroc Midnight"
     },
     {
         "id": "466",
         "name": "meloettaaria",
-        "typos": ["meloetta", "meloettaa", "meloette", "maloeta"],
+        "typos": ["meloetta a", "meloette a", "maloeta a"],
         "display_name": "Meloetta Aria"
     },
     {
         "id": "467",
         "name": "meloettapirouette",
-        "typos": ["meloettap", "meloettapiroette", "pirouette"],
+        "typos": ["meloetta p", "meloette p", "maloeta p", "piroette", "pirouette"],
         "display_name": "Meloetta Pirouette"
     },
     {
@@ -2823,7 +2823,7 @@
     {
         "id": "471",
         "name": "jangmoo",
-        "typos": ["jangmo"],
+        "typos": ["jangmo", "jagmo"],
         "display_name": "Jangmo-o"
     },
     {
@@ -2986,7 +2986,7 @@
     {
         "id": "498",
         "name": "miniormeteor",
-        "typos": ["miniorm", "meteor", "minior"],
+        "typos": ["miniorm", "meteor", "minior m"],
         "display_name": "Minior Meteor"
     },
     {
@@ -3316,20 +3316,20 @@
     {
         "id":"553",
         "name": "castformsunny",
-        "typos": ["castformsun", "castformsunn", "castforms"],
-        "display_name":"Castform(Sunny)"
+        "typos": ["castformsun", "castformsunn", "castforms", "castform su", "sun"],
+        "display_name":"Castform Sunny"
     },
     {
         "id":"554",
         "name": "castformrainy",
-        "typos": ["castformrain", "castformr"],
-        "display_name":"Castform(Rainy)"
+        "typos": ["castformrain", "castformr", "castform r", "rain"],
+        "display_name":"Castform Rainy"
     },
     {
         "id":"555",
         "name": "castformsnowy",
-        "typos": ["castformsnow", "castformsn"],
-        "display_name":"Castform(Snowy)"
+        "typos": ["castformsnow", "castformsn", "castfform sn", "snow"],
+        "display_name":"Castform Snowy"
     },
     {
         "id":"556",
@@ -3340,7 +3340,7 @@
     {
         "id":"557",
         "name": "chingling",
-        "typos": [],
+        "typos": ["chinling", "chigling"],
         "display_name":"Chingling"
     },
     {
@@ -3390,6 +3390,48 @@
         "name": "relicanth",
         "typos": [],
         "display_name":"Relicanth"
+    },
+    {
+        "id":"566",
+        "name": "woobat",
+        "typos": [],
+        "display_name":"Woobat"
+    },
+    {
+        "id":"567",
+        "name": "swoobat",
+        "typos": [],
+        "display_name":"Swoobat"
+    },
+    {
+        "id":"568",
+        "name": "tynamo",
+        "typos": [],
+        "display_name":"Tynamo"
+    },
+    {
+        "id":"569",
+        "name": "eelektrik",
+        "typos": ["eelektric", "elektrik"],
+        "display_name":"Eelektrik"
+    },
+    {
+        "id":"570",
+        "name": "eelektross",
+        "typos": ["elektros"],
+        "display_name":"Eelektross"
+    },
+    {
+        "id":"571",
+        "name": "skrelp",
+        "typos": ["skelp"],
+        "display_name":"Skrelp"
+    },
+    {
+        "id":"572",
+        "name": "dragalge",
+        "typos": ["dragage"],
+        "display_name":"Dragalge"
     }
 
     ]

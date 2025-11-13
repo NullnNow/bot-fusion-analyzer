@@ -1,7 +1,7 @@
-from enums import Description, Severity
+from bot.misc.enums import Description, Severity, IdType
 
 
-class Issue():
+class Issue:
     description: Description
     severity: Severity
 
@@ -9,19 +9,16 @@ class Issue():
         return self.description.value
 
 
-class Issues():
+class Issues:
     issue_list: list[Issue]
 
     def __init__(self):
         self.issue_list = []
 
     def __str__(self) -> str:
-        if len(self.issue_list) == 1:
-            return str(self.issue_list[0])
-
         result = ""
         for issue in self.issue_list:
-            result += f"- {issue}\n"
+            result += f"- **{issue}**\n"
         return result
 
     def add(self, issue: Issue):
@@ -45,13 +42,23 @@ class DifferentSprite(Issue):
 
 
 class MissingFilename(Issue):
-    description = Description.missing_file_name
+    description = Description.missing_filename
     severity = Severity.refused
 
 
 class MissingSprite(Issue):
     description = Description.missing_file
     severity = Severity.ignored
+
+
+class MissingMessageId(Issue):
+    description = Description.missing_message_id
+    severity = Severity.refused
+
+
+class DifferentFilenameIds(Issue):
+    description = Description.different_filenames
+    severity = Severity.refused
 
 
 class PokemonNames(Issue):
@@ -92,13 +99,8 @@ class TripleFusionSprite(Issue):
     severity = Severity.accepted
 
 
-class IconSprite(Issue):
-    description = Description.icon
-    severity = Severity.ignored
-
-
-class IncomprehensibleSprite(Issue):
-    description = Description.incomprehensible
+class UnknownSprite(Issue):
+    description = Description.unknown_sprite
     severity = Severity.ignored
 
 
@@ -111,6 +113,54 @@ class OutOfDex(Issue):
 
     def __str__(self) -> str:
         return f"{self.description.value} ({self.fusion_id})"
+
+
+class IncorrectGallery(Issue):
+    description = Description.incorrect_gallery
+    severity = Severity.refused
+
+    def __init__(self, id_type: IdType, gallery: str):
+        self.id_type = id_type.value
+        self.gallery = gallery
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: {self.id_type} in {self.gallery}"
+
+
+class PokemonNameNotFound(Issue):
+    description = Description.name_not_found
+    severity = Severity.controversial
+
+    def __init__(self, name: str):
+        self.name = name
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: '{self.name}'"
+
+
+class WrongLetter(Issue):
+    description = Description.wrong_letter
+    severity = Severity.refused
+
+    def __init__(self, correct_letter: str):
+        if correct_letter == "":
+            self.correct_letter = "empty"
+        else:
+            self.correct_letter = correct_letter
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: should be {self.correct_letter}"
+
+
+class MissingLetters(Issue):
+    description = Description.missing_letters
+    severity = Severity.refused
+
+    def __init__(self, missing_letters: list[str]):
+        self.missing_letters = missing_letters
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: {self.missing_letters}"
 
 
 class NotPng(Issue):
@@ -192,7 +242,7 @@ class ColorOverExcess(Issue):
 
 class SimilarityExcessControversial(Issue):
     description = Description.high_similarity
-    severity = Severity.refused
+    severity = Severity.controversial
 
     def __init__(self, maximum: int) -> None:
         self.maximum = maximum
@@ -203,7 +253,7 @@ class SimilarityExcessControversial(Issue):
 
 class SimilarityExcessRefused(Issue):
     description = Description.refused_similarity
-    severity = Severity.controversial
+    severity = Severity.refused
 
     def __init__(self, maximum: int) -> None:
         self.maximum = maximum
@@ -245,7 +295,7 @@ class IntentionalTransparency(Issue):
 
 class SimilarityAmount(Issue):
     description = Description.similarity_amount
-    severity = Severity.controversial
+    severity = Severity.accepted
 
     def __init__(self, amount: int) -> None:
         self.amount = amount
@@ -261,4 +311,4 @@ class HalfPixels(Issue):
 
 class MisplacedGrid(Issue):
     description = Description.misplaced_grid
-    severity = Severity.controversial
+    severity = Severity.accepted

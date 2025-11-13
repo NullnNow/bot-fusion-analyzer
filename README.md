@@ -9,6 +9,20 @@ Discord bot, provides feedback on custom sprites for the game [Pokémon Infinite
 - **Greystorm** for giving permission to use various utilities from spritebot
 
 # Changelog
+## Version 2.5
+- Really beefy **Gallery analysis overhaul** with specific gallery checks. These include:
+  * Ensuring that the **correct Pokémon names** appear in the gallery message. Made to prevent misnumbered fusions.
+  * **Ensuring that people don't send several different fusions in the same gallery message**, as this has the risk of some sprites not making it to the game.
+  * **Correct gallery checks:** fusions and triples go to Sprite Gallery, custom bases and eggs go to Assets Gallery.
+  * **Alt letter checks**. The short of it is that if you upload several variations of the same fusion or base, the first one should have no letter, and the subsequent ones should have letters from a, b, c... In this order and not skipping letters. A bunch of logic was added to ensure this is the case.
+- **Ping analysis:** if you simply ping the bot, it will analyze any sprites attached to that message
+- If the filename is correct, it will now show the letter (if there's any) in the title. For instance, **Valid: 1.1b**
+- The analysis embed now looks slightly different in order to allow for more dynamic stuff in the future
+- Automatic analysis will not happen if the post has certain tags, to avoid unwanted analysis on Non-IF or trainer cards
+- Some big internal changes to organize the current modules in distinct packages
+- Fix: archived threads weren't being fetched properly in spriter applications
+- Fix: ignore attachments that aren't images
+
 ## Version 2.4
 - **Intentional transparency**: by adding this keyword to gallery posts, Fusion Bot won't reject a sprite that has semi transparent pixels
 - Support for the new egg sprite filename format (it's now 123_egg.png)

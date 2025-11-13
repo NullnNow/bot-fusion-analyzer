@@ -1,22 +1,17 @@
+import numpy
 import requests
-from analysis import Analysis
-from utils import is_intentional_transparency
-from enums import Severity
-from exceptions import TransparencyException
-from issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
-                    ColorExcessRefused, ColorOverExcess, GraphicsGaleUser,
-                    HalfPixels, InvalidSize, MissingTransparency,
-                    SimilarityAmount, SemiTransparency, CustomBase,
-                    SimilarityExcessControversial, SimilarityExcessRefused,
-                    MisplacedGrid, EggSprite, NotPng, IntentionalTransparency)
-
-# Pillow
-from PIL.Image import open as image_open
 from PIL.Image import Image, new
+from PIL.Image import open as image_open
 from PIL.PyAccess import PyAccess
 
-# Fuck colormath
-import numpy
+from bot.context.message_identifier import is_intentional_transparency
+from bot.misc.exceptions import TransparencyException
+from .analysis import Analysis
+from .issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
+                     ColorExcessRefused, ColorOverExcess, GraphicsGaleUser,
+                     HalfPixels, InvalidSize, MissingTransparency,
+                     SimilarityAmount, SemiTransparency, SimilarityExcessControversial, SimilarityExcessRefused,
+                     MisplacedGrid, NotPng, IntentionalTransparency)
 
 
 def patch_asscalar(a):
@@ -76,11 +71,7 @@ class SpriteContext():
         self.useful_colors: list = []
         self.similar_color_dict: dict = {}
 
-        # To both cover:
-        # replied custom bases detected in analysis_content
-        # and custom bases from assets gallery
-
-        if analysis.type.is_assets_gallery() or analysis.issues.has_issue(CustomBase):
+        if analysis.fusion_filename.id_type.is_custom_base():
             self.refused_color_lim = CUSTOM_BASE_REFUSED_COLOR_LIMIT
             self.controv_color_lim = CUSTOM_BASE_CONTROV_COLOR_LIMIT
             self.refused_sim_lim = CUSTOM_BASE_REFUSED_SIM_LIMIT
@@ -91,8 +82,7 @@ class SpriteContext():
             self.refused_sim_lim = REFUSED_SIMILARITY_LIMIT
             self.controv_sim_lim = CONTROVERSIAL_SIMILARITY_LIMIT
 
-        self.egg_sprite = analysis.issues.has_issue(EggSprite)
-        if self.egg_sprite:
+        if analysis.fusion_filename.id_type.is_egg():
             self.max_size = EGG_SIZE
             self.step =  EGG_STEP
         else:
@@ -105,8 +95,7 @@ class SpriteContext():
         # Ensures that the image is actually a png
         file_format = self.image.format
         if file_format != "PNG":
-            analysis.severity = Severity.refused
-            analysis.issues.add(NotPng(file_format))
+            analysis.add_issue(NotPng(file_format))
 
     def turn_image_into_rgb(self):
         # Avoids having to deal with indexed palette quirks
@@ -115,18 +104,21 @@ class SpriteContext():
 
     def handle_sprite_size(self, analysis: Analysis):
         image_size = self.image.size
-        if image_size != self.valid_size:
-            analysis.size_issue = True
-            analysis.severity = Severity.refused
-            analysis.issues.add(InvalidSize(image_size))
-            if image_size == (1024, 1024):
-                analysis.ai_suspicion += 8
+        if image_size == self.valid_size:
+            analysis.ai_suspicion -= 4
+            return
+
+        analysis.size_issue = True
+        analysis.add_issue(InvalidSize(image_size))
+        if image_size == (1024, 1024):
+            analysis.ai_suspicion += 8
+        elif image_size == (96, 96):
+            analysis.ai_suspicion -= 2
 
     def handle_sprite_colors(self, analysis: Analysis):
         all_colors = self.image.getcolors(ALL_COLOR_LIMIT)
         if is_color_excess(all_colors):
-            analysis.severity = Severity.refused
-            analysis.issues.add(ColorOverExcess(ALL_COLOR_LIMIT))
+            analysis.add_issue(ColorOverExcess(ALL_COLOR_LIMIT))
             analysis.ai_suspicion += 6
         else:
             self.handle_color_count(analysis, all_colors)
@@ -135,51 +127,46 @@ class SpriteContext():
                 self.handle_color_similarity(analysis)
             self.handle_aseprite(analysis)
             self.handle_graphics_gale(analysis)
+            analysis.ai_suspicion -= 2
 
     def handle_color_count(self, analysis: Analysis, all_colors: list):
         try:
             self.useful_colors = remove_useless_colors(all_colors)
             self.handle_color_amount(analysis, all_colors)
         except TransparencyException:
-            analysis.severity = Severity.refused
-            analysis.issues.add(MissingTransparency())
+            analysis.add_issue(MissingTransparency())
             analysis.ai_suspicion += 4
 
     def handle_color_amount(self, analysis: Analysis, all_colors):
         all_amount = len(all_colors)
         self.useful_amount = len(self.useful_colors)
         self.useless_amount = all_amount - self.useful_amount
-        analysis.issues.add(ColorAmount(self.useful_amount))
+        analysis.add_issue(ColorAmount(self.useful_amount))
 
     def handle_color_similarity(self, analysis: Analysis):
         similarity_amount = self.get_similarity_amount()
-        analysis.issues.add(SimilarityAmount(similarity_amount))
+        analysis.add_issue(SimilarityAmount(similarity_amount))
         if similarity_amount > self.refused_sim_lim:
-            analysis.severity = Severity.refused
-            analysis.issues.add(SimilarityExcessRefused(self.refused_sim_lim))
-        elif (similarity_amount > self.controv_sim_lim) and (analysis.severity is not Severity.refused):
-            analysis.severity = Severity.controversial
-            analysis.issues.add(SimilarityExcessControversial(self.controv_sim_lim))
+            analysis.add_issue(SimilarityExcessRefused(self.refused_sim_lim))
+        elif similarity_amount > self.controv_sim_lim:
+            analysis.add_issue(SimilarityExcessControversial(self.controv_sim_lim))
 
     def handle_color_limit(self, analysis: Analysis):
         if self.useful_amount > self.refused_color_lim:
-            analysis.issues.add(ColorExcessRefused(self.refused_color_lim))
-            analysis.severity = Severity.refused
+            analysis.add_issue(ColorExcessRefused(self.refused_color_lim))
         elif self.useful_amount > self.controv_color_lim:
-            analysis.issues.add(ColorExcessControversial(self.controv_color_lim))
-            if analysis.severity is not Severity.refused:
-                analysis.severity = Severity.controversial
+            analysis.add_issue(ColorExcessControversial(self.controv_color_lim))
 
     def handle_aseprite(self, analysis: Analysis):
         if self.useful_amount != 0:
             aseprite_ratio = self.useless_amount / self.useful_amount
             if aseprite_ratio > ASEPRITE_RATIO:
-                analysis.issues.add(AsepriteUser(aseprite_ratio))
+                analysis.add_issue(AsepriteUser(aseprite_ratio))
 
     def handle_graphics_gale(self, analysis: Analysis):
         is_graphics_gale = "GLDPNG" in self.image.info.get("Software", "")
         if is_graphics_gale:
-            analysis.issues.add(GraphicsGaleUser())
+            analysis.add_issue(GraphicsGaleUser())
 
     def handle_sprite_transparency(self, analysis: Analysis):
         if analysis.size_issue:
@@ -194,13 +181,11 @@ class SpriteContext():
             return
 
         if is_intentional_transparency(analysis.message):
-            analysis.issues.add(IntentionalTransparency())
+            analysis.add_issue(IntentionalTransparency())
             return
         analysis.transparency_issue = True
         analysis.transparency_image = image
-        if analysis.severity is not Severity.refused:
-            analysis.severity = Severity.controversial
-        analysis.issues.add(SemiTransparency())
+        analysis.add_issue(SemiTransparency())
 
 
     def get_similarity_amount(self):
@@ -214,7 +199,7 @@ class SpriteContext():
         return similarity_amount
 
     def handle_sprite_half_pixels(self, analysis: Analysis):
-        if analysis.size_issue is True:
+        if analysis.size_issue:
             return
 
         half_pixels_amount, image = self.highlight_half_pixels(strict_grid=True)
@@ -227,10 +212,9 @@ class SpriteContext():
         if lax_half_pixels_amount > 0:
             analysis.half_pixels_issue = True
             analysis.half_pixels_image = image
-            analysis.severity = Severity.refused
-            analysis.issues.add(HalfPixels())
+            analysis.add_issue(HalfPixels())
         else:
-            analysis.issues.add(MisplacedGrid())
+            analysis.add_issue(MisplacedGrid())
 
 
     def highlight_transparency(self) -> tuple[int, Image]:
@@ -429,11 +413,6 @@ def get_color_delta(rgb_a: tuple, rgb_b: tuple):
 
 
 def main(analysis: Analysis):
-    if (analysis.severity == Severity.accepted) or analysis.type.is_reply():
-        handle_valid_sprite(analysis)
-
-
-def handle_valid_sprite(analysis: Analysis):
     context = SpriteContext(analysis)
     context.handle_sprite_format(analysis)
     context.turn_image_into_rgb()

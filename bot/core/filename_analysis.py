@@ -43,6 +43,14 @@ class FusionFilename:
             return None
         return self.full_filename.replace(".png", "")
 
+    def ids_list(self) -> list[str]:
+        if self.dex_ids is None:
+            return []
+        if "." in self.dex_ids:
+            return self.dex_ids.split(".")
+        else:
+            return [self.dex_ids]
+
 
 def remove_spoiler(filename: str) -> str|None:
     if filename is None:

@@ -4,6 +4,7 @@ from .analysis import Analysis
 from .issues import (CustomBase, DifferentSprite, EggSprite, UnknownSprite, MissingFilename,
                      MissingSprite, OutOfDex, FileName, PokemonNames, TripleFusionSprite)
 
+NAME_MAP = utils.id_to_name_map()
 
 class ContentContext:
     id_type: IdType
@@ -98,15 +99,13 @@ def handle_dex_verification(analysis: Analysis, fusion_id: str):
 
 def handle_pokemon_names(analysis: Analysis, fusion_id: str):
     head, body = fusion_id.split(".")
-    name_map = utils.id_to_name_map()
-    head_name = name_map.get(head)
-    body_name = name_map.get(body)
+    head_name = NAME_MAP.get(head)
+    body_name = NAME_MAP.get(body)
     analysis.add_issue(PokemonNames(head_name, body_name))
 
 
 def handle_pokemon_name(analysis: Analysis, base_id: str, egg_sprite: bool = False):
-    name_map = utils.id_to_name_map()
-    pokemon_name = name_map.get(base_id)
+    pokemon_name = NAME_MAP.get(base_id)
     if egg_sprite:
         analysis.add_issue(EggSprite(pokemon_name))
     else:

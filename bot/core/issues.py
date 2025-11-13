@@ -127,6 +127,17 @@ class IncorrectGallery(Issue):
         return f"{self.description.value}: {self.id_type} in {self.gallery}"
 
 
+class PokemonNameNotFound(Issue):
+    description = Description.name_not_found
+    severity = Severity.controversial
+
+    def __init__(self, name: str):
+        self.name = name
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: '{self.name}'"
+
+
 class WrongLetter(Issue):
     description = Description.wrong_letter
     severity = Severity.refused
@@ -139,6 +150,17 @@ class WrongLetter(Issue):
 
     def __str__(self) -> str:
         return f"{self.description.value}: should be {self.correct_letter}"
+
+
+class MissingLetters(Issue):
+    description = Description.missing_letters
+    severity = Severity.refused
+
+    def __init__(self, missing_letters: list[str]):
+        self.missing_letters = missing_letters
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: {self.missing_letters}"
 
 
 class NotPng(Issue):

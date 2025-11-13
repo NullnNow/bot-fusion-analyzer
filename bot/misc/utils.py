@@ -112,11 +112,20 @@ def find_specific_fusion_id(message: Message, id_to_find: str) -> bool:
     return result is not None
 
 
-def id_to_name_map():  # Thanks Greystorm for the util and file
+def id_to_name_map() -> dict[str, str]:  # Thanks Greystorm for the util and file
     """Returns dictionary mapping id numbers to display names"""
+    return {element["id"]: element["display_name"] for element in pokemon_names()}
+
+
+def id_to_typos_map() -> dict[str, list[str]]:
+    """Returns dictionary mapping id numbers to an object with names and typos"""
+    return {element["id"]: element["typos"] for element in pokemon_names()}
+
+
+def pokemon_names() -> list[dict[str, str]]:
     with open(NAMES_JSON_FILE) as f:
         data = json.loads(f.read())
-        return {element["id"]: element["display_name"] for element in data["pokemon"]}
+        return data["pokemon"]
 
 
 BLUE_TEXT    = '\033[94m'

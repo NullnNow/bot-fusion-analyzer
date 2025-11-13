@@ -1,5 +1,7 @@
+import re
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from discord import Message
 
@@ -8,8 +10,11 @@ from bot.core.analysis import Analysis
 from bot.core.content_analysis import handle_dex_verification
 from bot.core.filename_analysis import FusionFilename
 from bot.core.issues import MissingMessageId, UnknownSprite, DifferentFilenameIds, DifferentSprite, IncorrectGallery, \
-    FileName, WrongLetter
+    FileName, WrongLetter, OutOfDex, PokemonNameNotFound, MissingLetters
 from bot.misc import utils
+
+NAME_MAP: dict[str, str] = utils.id_to_name_map()
+TYPOS_MAP: dict[str, list[str]] = utils.id_to_typos_map()
 
 
 async def main(analysis_list: list[Analysis]):
@@ -19,12 +24,15 @@ async def main(analysis_list: list[Analysis]):
     same_id_checks(analysis_list)
     if analysis_list[0].issues.has_issue(UnknownSprite):
         return
-    correct_gallery_checks(analysis_list)
+    correct_gallery = correct_gallery_checks(analysis_list)
+    if not correct_gallery:
+        return
     pokemon_name_checks(analysis_list)
     await filename_letter_checks(analysis_list)
 
 
 def same_id_checks(analysis_list: list[Analysis]):
+    """Ensures that all images in a single gallery message have the same fusion/base IDs"""
     first_analysis = analysis_list[0]
     first_filename = first_analysis.fusion_filename
     if first_filename.id_type.is_unknown():
@@ -56,49 +64,71 @@ def compare_with_first_filename(analysis: Analysis, first_filename: FusionFilena
 
 
 def correct_gallery_checks(analysis_list: list[Analysis]):
+    """Ensures that the sprites have been sent to the correct gallery: either Sprite Gallery or Assets Gallery"""
     first_analysis = analysis_list[0]
     if first_analysis.type.is_sprite_gallery():
-        ensure_sprite_gallery_type(first_analysis)
+        return ensure_sprite_gallery_type(first_analysis)
     else:
-        ensure_assets_gallery_type(first_analysis)
+        return ensure_assets_gallery_type(first_analysis)
 
 
-def ensure_sprite_gallery_type(analysis: Analysis):
+def ensure_sprite_gallery_type(analysis: Analysis) -> bool:
     id_type = analysis.fusion_filename.id_type
     if id_type.is_fusion() or id_type.is_triple_fusion():
-        return
+        return True
     analysis.add_issue(IncorrectGallery(id_type, "Sprite Gallery"))
+    return False
 
 
-def ensure_assets_gallery_type(analysis: Analysis):
+def ensure_assets_gallery_type(analysis: Analysis) -> bool:
     id_type = analysis.fusion_filename.id_type
     if id_type.is_custom_base() or id_type.is_egg():
-        return
+        return True
     analysis.add_issue(IncorrectGallery(id_type, "Assets Gallery"))
+    return False
 
 
 def pokemon_name_checks(analysis_list: list[Analysis]):
+    """Ensures that the Pokémon in question are mentioned in the gallery message, to avoid misnumbered IDs"""
     for analysis in analysis_list:
         handle_dex_verification(analysis, analysis.fusion_filename.dex_ids)
-    # If all the filenames match, text checker (beta version that only mentions it in the analysis)
-        # Either grab the full names of each Pokémon or a minimal version that allows for misspellings
-        # Ensure both names exist in the gallery message. If they don't, have a new easily searchable issue
-        # After a trial period it can be determined if the name checker is too strict, how often do misspellings
-        # happen, how flexible it is, and if it actually enforces cases where the names don't match
+    first_analysis = analysis_list[0]   # We only need to check the message for one analysis
+    if first_analysis.issues.has_issue(OutOfDex):
+        return
+    ensure_pokemon_names_appear(first_analysis)
+
+
+def ensure_pokemon_names_appear(analysis: Analysis):
+    for pokemon_id in analysis.fusion_filename.ids_list():
+        check_name_in_message(pokemon_id, analysis)
+
+
+def check_name_in_message(pokemon_id: str, analysis: Analysis):
+    message_content = analysis.message.content.lower()
+    clean_name = NAME_MAP.get(pokemon_id)
+    clean_name_result = re.search(clean_name.lower(), message_content)
+    if clean_name_result is not None:
+        return
+    typos_found = check_typos_in_message(pokemon_id, message_content)
+    if not typos_found:
+        analysis.add_issue(PokemonNameNotFound(clean_name))
+
+
+def check_typos_in_message(pokemon_id: str, message_content: str) -> bool:
+    typos: list[str] = TYPOS_MAP.get(pokemon_id)
+    for typo in typos:
+        typo_result = re.search(typo.lower(), message_content)
+        if typo_result is not None:
+            return True
+    return False
 
 
 async def filename_letter_checks(analysis_list: list[Analysis]):
+    """Ensures that in a given month, the same fusion by the same user follows a certain alt letter pattern"""
     past_instances = await search_in_same_month(analysis_list[0])
-    # Month search:
-        # Search for previous gallery post within the same month by that user
-        # If one matches the current message, ensure that none of its images have the same filename as any of
-        # the current images. Issue if it does.
-        # If there are n images in a previous matching post, take it into account for the next part
-    # Ensure that the new sprites have letters that start at N previous images and continue the pattern for M
-    # 1 nothing, 2a, 3b, 4c, 5d, number being N + M
-    # Since the order cannot be guaranteed, have a boolean array of M size that goes from letter N to N+M
-    # If any attachment has a letter higher than N + M, put an issue on that analysis
-    # At the end, if any letter is unfilled, put an issue in the first analysis
+    if past_instances > 26:
+        await ctx().doodledoo.debug.send(f"Too many gallery instances: ({analysis_list[0].message.jump_url})")
+        return
     if len(analysis_list) == 1:
         await ensure_correct_letter(analysis_list[0], past_instances)
     else:
@@ -118,8 +148,11 @@ async def search_in_same_month(analysis: Analysis) -> int:
 
 
 def last_day_of_previous_month() -> datetime:
-    #TODO
-    return datetime(2025, 10, 19)
+    # Gallery cutoff: Midnight EST when a new month starts
+    est_tz = ZoneInfo("America/New_York")
+    now = datetime.now(est_tz)
+    first_day_of_current_month = datetime(now.year, now.month, 1, tzinfo=est_tz)
+    return first_day_of_current_month - timedelta(days=1)
 
 
 def same_fusion_and_author_instances(message: Message, og_message: Message, id_to_find: str) -> int:
@@ -147,4 +180,34 @@ async def ensure_correct_letter(analysis: Analysis, past_instances: int):
 
 
 def ensure_filled_letters(analysis_list: list[Analysis], past_instances: int):
-    pass    #TODO
+    starting_letter_pos = past_instances
+    final_letter_pos = past_instances + len(analysis_list)
+    letter_range = get_letter_range(starting_letter_pos, final_letter_pos)
+    new_range = check_letters_are_in_range(analysis_list, letter_range)
+    if len(new_range) > 0:
+        analysis_list[0].add_issue(MissingLetters(new_range))
+
+
+def get_letter_range(starting_letter_pos: int, final_letter_pos: int) -> list[str]:
+    letter_range = []
+    for letter_pos in range(starting_letter_pos, final_letter_pos):
+        correct_letter = get_correct_letter(letter_pos)
+        letter_range.append(correct_letter)
+    return letter_range
+
+
+def check_letters_are_in_range(analysis_list: list[Analysis], letter_range: list[str]) -> list[str]:
+    for analysis in analysis_list:
+        letter = analysis.fusion_filename.letter
+        if letter not in letter_range:
+            analysis.add_issue(WrongLetter(f"one of these: {letter_range}"))
+        else:
+            letter_range.remove(letter)
+    return letter_range
+
+
+def get_correct_letter(current_instance: int) -> str:
+    if current_instance == 0:
+        return ""
+    else:
+        return string.ascii_lowercase[current_instance - 1]

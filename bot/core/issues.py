@@ -207,6 +207,22 @@ class ColorAmount(Issue):
         return f"{self.description.value}: {self.amount}"
 
 
+class TransparentAmount(Issue):
+    """
+    The number of transparent pixels in a sprite (excluding completely
+    transparent pixels).
+    """
+
+    description = Description.transparent_amount
+    severity = Severity.accepted
+
+    def __init__(self, amount: int) -> None:
+        self.amount = amount
+
+    def __str__(self) -> str:
+        return f"{self.description.value}: {self.amount}"
+
+
 class ColorExcessRefused(Issue):
     description = Description.colour_excess
     severity = Severity.refused

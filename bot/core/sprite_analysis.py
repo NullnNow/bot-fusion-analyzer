@@ -11,7 +11,7 @@ from .issues import (AsepriteUser, ColorAmount, ColorExcessControversial,
                      ColorExcessRefused, ColorOverExcess, GraphicsGaleUser,
                      HalfPixels, InvalidSize, MissingTransparency,
                      SimilarityAmount, SemiTransparency, SimilarityExcessControversial, SimilarityExcessRefused,
-                     MisplacedGrid, NotPng, IntentionalTransparency)
+                     MisplacedGrid, NotPng, IntentionalTransparency, TransparentAmount)
 
 
 def patch_asscalar(a):
@@ -141,7 +141,17 @@ class SpriteContext():
         all_amount = len(all_colors)
         self.useful_amount = len(self.useful_colors)
         self.useless_amount = all_amount - self.useful_amount
-        analysis.add_issue(ColorAmount(self.useful_amount))
+
+        # Count all transparent and opaque pixels.
+        opaque_amount = len(set(c[1][0:3] for c in all_colors))
+        transparent_amount = len(list(c[1] for c in all_colors if c[1][3] < 255 and sum(c[1][0:3]) > 0))
+
+        # Add an issue stating the amount of colors in the sprite.
+        if transparent_amount:
+            analysis.add_issue(ColorAmount(opaque_amount))
+            analysis.add_issue(TransparentAmount(transparent_amount))
+        else:
+            analysis.add_issue(ColorAmount(self.useful_amount))
 
     def handle_color_similarity(self, analysis: Analysis):
         similarity_amount = self.get_similarity_amount()

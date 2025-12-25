@@ -3,6 +3,7 @@ from enum import Enum, auto
 import discord
 
 
+# NOTE: This should probably be a StrEnum instead.
 class Description(str, Enum):
     missing_file        = "Missing sprite"
     missing_filename    = "Missing filename"
@@ -14,6 +15,7 @@ class Description(str, Enum):
     intentional_transp  = "Intentional transparency"
     half_pixels         = "Half pixels detected"
     colour_amount       = "Colors"
+    transparent_amount  = "Transparent Colors",
     file_name           = "Filename"
     invalid_fusion_id   = "Invalid fusion ID"
     incorrect_gallery   = "Incorrect gallery"

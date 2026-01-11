@@ -65,10 +65,32 @@ class SpriteContext():
         self.image = image_open(raw_data)
         self.pixels = get_pixels(self.image)
 
-        self.useful_amount: int = 0
+        self.color_count: int = 0
+        """ The number of unique RGB values in an image with an alpha value greater than 0. 
+        This count treats all semi-transparent pixels as though they had an alpha of 255.
+        """
+        self.transparent_count: int = 0
+        """
+        The number of unique RGBA values in an image with an alpha value less than 255 and greater
+        than 0.
+        """
+        self.actual_color_count: int = 0
+        """
+        The number of colors in a sprite, excluding fully transparent pixels.
+        If this value does not equal ``color_count + transparent_count``, that is
+        because one or more RGB value in an image never had an alpha value 
+        equal to 255.
+        
+        Replaces useful_amount.
+        """
+
         self.useless_amount: int = 0
+        """ The number of pixels in an image minus the number of useful colors. 
+        Used when determining Aseperite ratio.
+        """
 
         self.useful_colors: list = []
+        """ The color palette used. """
         self.similar_color_dict: dict = {}
 
         if analysis.fusion_filename.id_type.is_custom_base():
@@ -123,7 +145,7 @@ class SpriteContext():
         else:
             self.handle_color_count(analysis, all_colors)
             self.handle_color_limit(analysis)
-            if self.useful_amount <= self.refused_color_lim:
+            if self.actual_color_count <= self.refused_color_lim:
                 self.handle_color_similarity(analysis)
             self.handle_aseprite(analysis)
             self.handle_graphics_gale(analysis)
@@ -138,20 +160,18 @@ class SpriteContext():
             analysis.ai_suspicion += 4
 
     def handle_color_amount(self, analysis: Analysis, all_colors):
-        all_amount = len(all_colors)
-        self.useful_amount = len(self.useful_colors)
-        self.useless_amount = all_amount - self.useful_amount
-
         # Count all transparent and opaque pixels.
-        opaque_amount = len(set(c[1][0:3] for c in all_colors))
-        transparent_amount = len(list(c[1] for c in all_colors if c[1][3] < 255 and sum(c[1][0:3]) > 0))
+        self.color_count = len(set(c[1][0:3] for c in self.useful_colors))
+        self.transparent_count = len(list(c[1] for c in self.useful_colors if c[1][3] < 255 and sum(c[1][0:3]) > 0))
+        self.actual_color_count = len(self.useful_colors)
+        self.useless_amount = len(all_colors) - self.actual_color_count
 
         # Add an issue stating the amount of colors in the sprite.
-        if transparent_amount:
-            analysis.add_issue(ColorAmount(opaque_amount))
-            analysis.add_issue(TransparentAmount(transparent_amount))
+        if self.transparent_count:
+            analysis.add_issue(ColorAmount(self.color_count))
+            analysis.add_issue(TransparentAmount(self.transparent_count))
         else:
-            analysis.add_issue(ColorAmount(self.useful_amount))
+            analysis.add_issue(ColorAmount(self.actual_color_count))
 
     def handle_color_similarity(self, analysis: Analysis):
         similarity_amount = self.get_similarity_amount()
@@ -162,14 +182,14 @@ class SpriteContext():
             analysis.add_issue(SimilarityExcessControversial(self.controv_sim_lim))
 
     def handle_color_limit(self, analysis: Analysis):
-        if self.useful_amount > self.refused_color_lim:
+        if self.actual_color_count > self.refused_color_lim:
             analysis.add_issue(ColorExcessRefused(self.refused_color_lim))
-        elif self.useful_amount > self.controv_color_lim:
+        elif self.actual_color_count > self.controv_color_lim:
             analysis.add_issue(ColorExcessControversial(self.controv_color_lim))
 
     def handle_aseprite(self, analysis: Analysis):
-        if self.useful_amount != 0:
-            aseprite_ratio = self.useless_amount / self.useful_amount
+        if self.actual_color_count != 0:
+            aseprite_ratio = self.useless_amount / self.actual_color_count
             if aseprite_ratio > ASEPRITE_RATIO:
                 analysis.add_issue(AsepriteUser(aseprite_ratio))
 

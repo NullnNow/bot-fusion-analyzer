@@ -66,31 +66,11 @@ class SpriteContext():
         self.pixels = get_pixels(self.image)
 
         self.color_count: int = 0
-        """ The number of unique RGB values in an image with an alpha value greater than 0. 
-        This count treats all semi-transparent pixels as though they had an alpha of 255.
-        """
         self.transparent_count: int = 0
-        """
-        The number of unique RGBA values in an image with an alpha value less than 255 and greater
-        than 0.
-        """
         self.actual_color_count: int = 0
-        """
-        The number of colors in a sprite, excluding fully transparent pixels.
-        If this value does not equal ``color_count + transparent_count``, that is
-        because one or more RGB value in an image never had an alpha value 
-        equal to 255.
-        
-        Replaces useful_amount.
-        """
-
         self.useless_amount: int = 0
-        """ The number of pixels in an image minus the number of useful colors. 
-        Used when determining Aseperite ratio.
-        """
 
         self.useful_colors: list = []
-        """ The color palette used. """
         self.similar_color_dict: dict = {}
 
         if analysis.fusion_filename.id_type.is_custom_base():
